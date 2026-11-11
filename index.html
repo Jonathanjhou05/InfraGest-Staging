@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>InfraGest - Gestão de Infraestrutura & Inventário</title>
+  <title>InfraGest - Gestão de Infraestrutura & Inventário (Staging)</title>
 
   <!-- PWA Metadata & Custom Icons -->
   <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
@@ -26,7 +26,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- SheetJS (XLSX Parser) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <!-- JSZip Library para exportação e leitura de arquivos ZIP -->
+  <!-- JSZip Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <style>
@@ -52,7 +52,7 @@
         <div class="w-16 h-16 bg-blue-50 rounded-2xl mx-auto flex items-center justify-center shadow-inner border border-blue-100 text-blue-600 text-2xl font-bold">
           IG
         </div>
-        <h2 class="font-bold text-slate-800 text-lg">InfraGest</h2>
+        <h2 class="font-bold text-slate-800 text-lg">InfraGest <span class="text-xs text-purple-600 font-mono">(Staging)</span></h2>
         <p class="text-xs text-slate-500">Entre com as suas credenciais para aceder ao sistema</p>
       </div>
 
@@ -227,7 +227,6 @@
       </div>
 
       <div id="admin-panel" class="space-y-4">
-        <!-- PAINEL DE GESTÃO E LISTAGEM DE TODAS AS PASTAS/SETORES -->
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
           <div class="flex justify-between items-center border-b pb-2">
             <h3 class="font-bold text-xs text-slate-700 uppercase"><i class="fa-solid fa-folder-tree mr-1 text-indigo-600"></i> Todas as Pastas & Setores Cadastrados</h3>
@@ -267,7 +266,6 @@
         </button>
       </div>
 
-      <!-- PAINEL DE BACKUP E RESTAURAÇÃO JSON -->
       <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
         <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2 text-sm">
           <i class="fa-solid fa-database text-purple-600"></i> Backup & Restauração (JSON)
@@ -305,7 +303,7 @@
     </button>
   </nav>
 
-  <!-- MODAL: SELETOR DE PASTAS COM PESQUISA INSTANTÂNEA -->
+  <!-- MODAIS -->
   <div id="modal-select-folder" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
       <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-indigo-50 flex-none">
@@ -328,7 +326,6 @@
     </div>
   </div>
 
-  <!-- MODAL: LISTAGEM COMPLETA DE TODAS AS PASTAS COM SELEÇÃO MÚLTIPLA E AÇÕES EM LOTE -->
   <div id="modal-all-folders" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
       <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-indigo-50 flex-none">
@@ -349,7 +346,6 @@
         </label>
       </div>
 
-      <!-- BARRA DE AÇÕES EM LOTE (MOVER, EXCLUIR SELECIONADAS E LIMPAR VAZIAS) -->
       <div class="bg-indigo-50 px-4 py-2.5 border-b border-indigo-100 flex flex-wrap items-center justify-between gap-2 flex-none">
         <div class="flex items-center gap-2">
           <input type="checkbox" id="select-all-folders-chk" onchange="toggleSelectAllModalFolders(this.checked)" class="rounded text-indigo-600 w-4 h-4 cursor-pointer">
@@ -362,11 +358,9 @@
           <button type="button" onclick="executeBatchMoveFolders()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-sm whitespace-nowrap">
             Mover
           </button>
-          <!-- BOTÃO DE EXCLUIR SELECIONADAS -->
           <button type="button" onclick="executeBatchDeleteFolders()" title="Excluir pastas selecionadas e seus itens" class="bg-red-500 hover:bg-red-600 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-sm whitespace-nowrap flex items-center gap-1">
             <i class="fa-solid fa-trash-can"></i> Excluir
           </button>
-          <!-- BOTÃO DE LIMPEZA AUTOMÁTICA -->
           <button type="button" onclick="executeAutoCleanup()" title="Limpar automaticamente pastas vazias e órfãs" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-2.5 py-1 rounded-lg text-xs shadow-sm whitespace-nowrap flex items-center gap-1">
             <i class="fa-solid fa-broom"></i> Vazias
           </button>
@@ -384,7 +378,6 @@
     </div>
   </div>
 
-  <!-- MODAL: OPÇÕES DE SINCRONIZAÇÃO -->
   <div id="modal-sync-options" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden p-5 space-y-4">
       <div class="flex justify-between items-center border-b pb-2">
@@ -407,7 +400,6 @@
     </div>
   </div>
 
-  <!-- MODAL DE LEMBRETE DO HOST NAME -->
   <div id="modal-host-hint" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden p-5 space-y-4 text-center">
       <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl">
@@ -423,7 +415,6 @@
     </div>
   </div>
 
-  <!-- MODAL: RELATÓRIO DE SINCRONIZAÇÃO -->
   <div id="modal-sync-report" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden my-auto max-h-[90vh] flex flex-col">
       <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-purple-50 flex-none">
@@ -467,7 +458,6 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD/EDIT SECTOR -->
   <div id="modal-folder" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
@@ -499,7 +489,6 @@
     </div>
   </div>
 
-  <!-- MODAL: EXPORTAÇÃO EXCEL -->
   <div id="modal-export" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
       <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-emerald-50">
@@ -525,7 +514,6 @@
     </div>
   </div>
 
-  <!-- MODAL: MACHINE DETAILS & PRINT TICKET -->
   <div id="modal-machine-details" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden my-auto max-h-[90vh] flex flex-col">
       <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center flex-none bg-blue-50">
@@ -587,7 +575,6 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD/EDIT USER -->
   <div id="modal-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
@@ -619,7 +606,6 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD/EDIT MACHINE -->
   <div id="modal-machine" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden my-auto max-h-[90vh] flex flex-col">
       <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center flex-none">
@@ -630,7 +616,6 @@
       <form onsubmit="saveMachine(event)" class="p-5 space-y-4 overflow-y-auto flex-1">
         <input type="hidden" id="edit-machine-id">
 
-        <!-- GABINETE -->
         <div>
           <div class="flex justify-between items-center mb-1">
             <label class="block text-xs font-semibold text-slate-600">Etiqueta / Gabinete (Apenas Números - 12 Dígitos) *</label>
@@ -647,7 +632,6 @@
           </div>
         </div>
 
-        <!-- MONITOR -->
         <div>
           <div class="flex justify-between items-center mb-1">
             <label class="block text-xs font-semibold text-slate-600">Etiqueta / Monitor (Apenas Números) *</label>
@@ -661,13 +645,11 @@
           </div>
         </div>
 
-        <!-- SCANNER CONTAINER -->
         <div id="scanner-container" class="hidden border-2 border-dashed border-blue-400 p-2 rounded-xl bg-slate-50 relative">
           <div id="reader" class="w-full"></div>
           <button type="button" onclick="stopScanner()" class="mt-2 w-full bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-lg">Fechar Leitor</button>
         </div>
 
-        <!-- MODELO -->
         <div>
           <div class="flex justify-between items-center mb-1">
             <label class="block text-xs font-semibold text-slate-600">Modelo / Tipo de Equipamento *</label>
@@ -680,7 +662,6 @@
           <datalist id="model-options"></datalist>
         </div>
 
-        <!-- SISTEMA OPERACIONAL -->
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Sistema Operacional *</label>
           <select id="machine-os" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-semibold text-blue-900">
@@ -693,7 +674,6 @@
           </select>
         </div>
 
-        <!-- ESTADO -->
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Estado de Funcionamento *</label>
           <select id="machine-status" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
@@ -705,7 +685,6 @@
           </select>
         </div>
 
-        <!-- PERIFÉRICOS -->
         <div>
           <div class="flex justify-between items-center mb-1.5">
             <label class="block text-xs font-semibold text-slate-600"><i class="fa-solid fa-boxes-stacked text-blue-600 mr-1"></i> Periféricos do Conjunto *</label>
@@ -732,9 +711,10 @@
 
   <!-- SUPABASE & APP LOGIC -->
   <script>
-    const SUPABASE_URL = "https://hkjnfhgkqlnmqzcdnsbw.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhram5maGdrcWxubXF6Y2Ruc2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NzY5MzEsImV4cCI6MjEwODM1MjkzMX0.l_SgJ1kJujNXgDXVUYTXrzci-RlfEkx2hBEbf-FnJHw"; 
+    const SUPABASE_URL = "https://gxudselvhdzwxzksgxdf.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_wM00yOgydhrwQmv3Qy8Wdg_ksXNtQ9H"; 
     
+    // Lista de Webhooks do Google Sheets (Adicione aqui a nova URL gerada pelo Apps Script se mudou)
     const GOOGLE_SHEETS_WEBHOOK_URLS = [
       "https://script.google.com/macros/s/AKfycbx3Jz4VREtEiSckdggjJquts1uTBlsTVQoFWLE3JOafdksrbq935_z8mBxL8PkESqc/exec",
       "https://script.google.com/macros/s/AKfycbwgSQFzJV5gVW3pxU_cMOOGGydHxIKrHz-fj1WeNUn0KOhiKaB57OkCGeY9NXSj__xbtw/exec"
@@ -899,7 +879,7 @@
         const currentSelected = Array.from(document.querySelectorAll('input[name="peripherals"]:checked')).map(chk => chk.value);
         currentSelected.push(formatted);
         renderPeripheralsCheckboxes(currentSelected);
-      } else { alert(" Este periférico já existe."); }
+      } else { alert("Este periférico já existe."); }
     }
 
     function removePeripheralItem(itemToRemove) {
@@ -915,12 +895,8 @@
       document.getElementById(elementId).value = "NÃO SE APLICA";
     }
 
-    function openHostHintModal() {
-      document.getElementById('modal-host-hint').classList.remove('hidden');
-    }
-    function closeHostHintModal() {
-      document.getElementById('modal-host-hint').classList.add('hidden');
-    }
+    function openHostHintModal() { document.getElementById('modal-host-hint').classList.remove('hidden'); }
+    function closeHostHintModal() { document.getElementById('modal-host-hint').classList.add('hidden'); }
 
     function setupNetworkListeners() {
       window.addEventListener('online', () => {
@@ -946,9 +922,7 @@
       document.getElementById('modal-sync-options').classList.remove('hidden');
     }
 
-    function closeSyncOptionsModal() {
-      document.getElementById('modal-sync-options').classList.add('hidden');
-    }
+    function closeSyncOptionsModal() { document.getElementById('modal-sync-options').classList.add('hidden'); }
 
     async function executeSync(mode) {
       closeSyncOptionsModal();
@@ -1041,7 +1015,7 @@
         }
 
         showSyncReportModal({
-          sentCount: mode === 'new' ? itemsToSend.length : itemsToSend.length,
+          sentCount: itemsToSend.length,
           sentDetails: itemsToSend,
           duplicates: duplicateItemsFound,
           inconsistencies: inconsistentItemsFound,
@@ -1096,9 +1070,7 @@
       document.getElementById('modal-sync-report').classList.remove('hidden');
     }
 
-    function closeSyncReportModal() {
-      document.getElementById('modal-sync-report').classList.add('hidden');
-    }
+    function closeSyncReportModal() { document.getElementById('modal-sync-report').classList.add('hidden'); }
 
     async function handleLogin(e) {
       e.preventDefault();
@@ -1241,7 +1213,6 @@
       renderMachines();
     }
 
-    // NOVA FUNÇÃO INTERATIVA PARA SELECIONAR SETOR COM PESQUISA EM TEMPO REAL
     function openInteractiveFolderSelector(title, callback) {
       interactiveFolderCallback = callback;
       document.getElementById('select-folder-modal-title').innerHTML = `<i class="fa-solid fa-folder-tree mr-1.5 text-indigo-600"></i> ${title}`;
@@ -1485,9 +1456,7 @@
       document.getElementById('modal-all-folders').classList.remove('hidden');
     }
 
-    function closeAllFoldersModal() {
-      document.getElementById('modal-all-folders').classList.add('hidden');
-    }
+    function closeAllFoldersModal() { document.getElementById('modal-all-folders').classList.add('hidden'); }
 
     function populateBatchFloorSelect() {
       const select = document.getElementById('batch-move-floor-select');
@@ -1550,9 +1519,7 @@
     }
 
     function toggleSelectAllModalFolders(isChecked) {
-      document.querySelectorAll('.folder-select-chk').forEach(chk => {
-        chk.checked = isChecked;
-      });
+      document.querySelectorAll('.folder-select-chk').forEach(chk => chk.checked = isChecked);
       updateSelectedFoldersCount();
     }
 
@@ -1563,21 +1530,13 @@
 
     async function executeBatchMoveFolders() {
       const targetFloorId = document.getElementById('batch-move-floor-select').value;
-      if (!targetFloorId) {
-        alert("⚠️ Selecione um Andar de destino para mover as pastas.");
-        return;
-      }
+      if (!targetFloorId) { alert("⚠️ Selecione um Andar de destino para mover as pastas."); return; }
 
       const selectedIds = Array.from(document.querySelectorAll('.folder-select-chk:checked')).map(chk => chk.value);
-      if (selectedIds.length === 0) {
-        alert("⚠️ Selecione pelo menos uma pasta na lista.");
-        return;
-      }
+      if (selectedIds.length === 0) { alert("⚠️ Selecione pelo menos uma pasta na lista."); return; }
 
       const targetFloor = floors.find(f => f.id === targetFloorId);
-      if (!confirm(`Deseja mover ${selectedIds.length} pasta(s) selecionada(s) para o andar "${targetFloor ? targetFloor.name : ''}"?`)) {
-        return;
-      }
+      if (!confirm(`Deseja mover ${selectedIds.length} pasta(s) selecionada(s) para o andar "${targetFloor ? targetFloor.name : ''}"?`)) return;
 
       let successCount = 0;
       for (const secId of selectedIds) {
@@ -1599,14 +1558,9 @@
 
     async function executeBatchDeleteFolders() {
       const selectedIds = Array.from(document.querySelectorAll('.folder-select-chk:checked')).map(chk => chk.value);
-      if (selectedIds.length === 0) {
-        alert("⚠️ Selecione pelo menos uma pasta para excluir.");
-        return;
-      }
+      if (selectedIds.length === 0) { alert("⚠️ Selecione pelo menos uma pasta para excluir."); return; }
 
-      if (!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja excluir ${selectedIds.length} pasta(s) selecionada(s) e TODAS as máquinas contidas nelas?`)) {
-        return;
-      }
+      if (!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja excluir ${selectedIds.length} pasta(s) selecionada(s) e TODAS as máquinas contidas nelas?`)) return;
 
       let deletedCount = 0;
       for (const secId of selectedIds) {
@@ -1627,14 +1581,8 @@
     }
 
     async function executeAutoCleanup() {
-      const emptySectors = sectors.filter(sec => {
-        const count = machines.filter(m => m.sector_id === sec.id).length;
-        return count === 0;
-      });
-
-      const orphanMachines = machines.filter(m => {
-        return !sectors.some(s => s.id === m.sector_id);
-      });
+      const emptySectors = sectors.filter(sec => machines.filter(m => m.sector_id === sec.id).length === 0);
+      const orphanMachines = machines.filter(m => !sectors.some(s => s.id === m.sector_id));
 
       if (emptySectors.length === 0 && orphanMachines.length === 0) {
         alert("✨ O sistema está limpo! Não foram encontradas pastas vazias ou registos órfãos.");
@@ -1653,18 +1601,12 @@
 
       for (const sec of emptySectors) {
         const { error } = await supabaseClient.from('sectors').delete().eq('id', sec.id);
-        if (!error) {
-          sectors = sectors.filter(s => s.id !== sec.id);
-          deletedSectorsCount++;
-        }
+        if (!error) { sectors = sectors.filter(s => s.id !== sec.id); deletedSectorsCount++; }
       }
 
       for (const m of orphanMachines) {
         const { error } = await supabaseClient.from('machines').delete().eq('id', m.id);
-        if (!error) {
-          machines = machines.filter(item => item.id !== m.id);
-          deletedMachinesCount++;
-        }
+        if (!error) { machines = machines.filter(item => item.id !== m.id); deletedMachinesCount++; }
       }
 
       alert(`✅ Limpeza concluída com sucesso!\n• Pastas vazias removidas: ${deletedSectorsCount}\n• Máquinas órfãs removidas: ${deletedMachinesCount}`);
@@ -1678,9 +1620,7 @@
       const backupData = {
         app: "InfraGest",
         timestamp: new Date().toISOString(),
-        floors: floors,
-        sectors: sectors,
-        machines: machines,
+        floors, sectors, machines,
         customPeripherals: customPeripheralsList,
         customModels: customModelsList
       };
@@ -1702,37 +1642,26 @@
         try {
           const parsed = JSON.parse(evt.target.result);
           if (!parsed.floors || !parsed.sectors || !parsed.machines) {
-            alert("⚠️ Ficheiro JSON inválido. Deve conter floors, sectors e machines.");
+            alert("⚠️ Ficheiro JSON inválido.");
             return;
           }
 
-          if (!confirm(`⚠️ ATENÇÃO!\nEsta ação irá mesclar/sincronizar ${parsed.floors.length} andares, ${parsed.sectors.length} setores e ${parsed.machines.length} máquinas com o servidor Supabase.\n\nDeseja prosseguir?`)) {
-            return;
-          }
+          if (!confirm(`⚠️ ATENÇÃO!\nEsta ação irá mesclar/sincronizar ${parsed.floors.length} andares, ${parsed.sectors.length} setores e ${parsed.machines.length} máquinas com o servidor Supabase.\n\nDeseja prosseguir?`)) return;
 
           for (const f of parsed.floors) {
-            if (!floors.some(existing => existing.id === f.id)) {
-              await supabaseClient.from('floors').insert([f]);
-            }
+            if (!floors.some(existing => existing.id === f.id)) await supabaseClient.from('floors').insert([f]);
           }
-
           for (const s of parsed.sectors) {
-            if (!sectors.some(existing => existing.id === s.id)) {
-              await supabaseClient.from('sectors').insert([s]);
-            }
+            if (!sectors.some(existing => existing.id === s.id)) await supabaseClient.from('sectors').insert([s]);
           }
-
           for (const m of parsed.machines) {
-            if (!machines.some(existing => existing.id === m.id)) {
-              await supabaseClient.from('machines').insert([m]);
-            }
+            if (!machines.some(existing => existing.id === m.id)) await supabaseClient.from('machines').insert([m]);
           }
 
           if (parsed.customPeripherals && Array.isArray(parsed.customPeripherals)) {
             customPeripheralsList = Array.from(new Set([...customPeripheralsList, ...parsed.customPeripherals]));
             saveCustomPeripheralsToStorage();
           }
-
           if (parsed.customModels && Array.isArray(parsed.customModels)) {
             customModelsList = Array.from(new Set([...customModelsList, ...parsed.customModels]));
             saveCustomModelsToStorage();
@@ -1740,7 +1669,6 @@
 
           await loadDataFromServer();
           alert("✅ Banco de dados restaurado e sincronizado com sucesso!");
-
         } catch (err) {
           alert("Erro ao ler o ficheiro JSON: " + err.message);
         } finally {
@@ -1752,10 +1680,7 @@
 
     function filterModalFolders(query) {
       const q = query.toLowerCase().trim();
-      if (!q) {
-        renderModalFoldersList(sectors);
-        return;
-      }
+      if (!q) { renderModalFoldersList(sectors); return; }
       const filtered = sectors.filter(s => {
         const floor = floors.find(f => f.id === s.floor_id);
         const floorName = floor ? floor.name.toLowerCase() : 'desconhecido';
@@ -1820,9 +1745,7 @@ ${m.notes || 'Nenhuma observação cadastrada.'}
 
       try {
         const zip = await JSZip.loadAsync(file);
-        let importedMachines = 0;
-        let createdFloors = 0;
-        let createdSectors = 0;
+        let importedMachines = 0, createdFloors = 0, createdSectors = 0;
 
         for (const relativePath of Object.keys(zip.files)) {
           const zipEntry = zip.files[relativePath];
@@ -2513,7 +2436,6 @@ ${m.notes || 'Nenhuma observação cadastrada.'}
       }
 
       const ticket = generateTicketFromCode(code);
-
       const sec = sectors.find(s => s.id === currentSectorId);
       const now = new Date();
       const dateStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
