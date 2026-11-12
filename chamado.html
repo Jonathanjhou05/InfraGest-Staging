@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Suporte TI - Abrir Chamado</title>
+
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body { -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 flex flex-col min-h-screen font-sans">
+
+  <!-- HEADER SIMPLES -->
+  <header class="bg-blue-600 text-white shadow-md px-4 py-4 text-center">
+    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2 text-2xl">
+      <i class="fa-solid fa-laptop-medical"></i>
+    </div>
+    <h1 class="font-bold text-xl leading-tight">Suporte Técnico</h1>
+    <p class="text-blue-100 text-xs mt-1">Abertura rápida de chamados</p>
+  </header>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="flex-1 p-4 flex flex-col items-center justify-center -mt-6">
+    <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative z-10 border border-slate-100">
+      
+      <!-- Formulário de Abertura -->
+      <form id="ticket-form" onsubmit="submitTicket(event)" class="space-y-4">
+        
+        <!-- Campo do Gabinete (Auto-preenchido via QRCode) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Equipamento (Etiqueta/Gabinete)</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-barcode"></i></span>
+            <input type="text" id="ticket-gab" required placeholder="Ex: 991017251100" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-sm font-mono font-bold text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          </div>
+          <p id="machine-info" class="text-[10px] font-semibold text-emerald-600 mt-1 hidden"><i class="fa-solid fa-check-circle mr-1"></i> Equipamento localizado.</p>
+        </div>
+
+        <!-- Nome do Solicitante -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">O seu Nome / Setor</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-regular fa-user"></i></span>
+            <input type="text" id="ticket-name" required placeholder="Ex: Dr. João - Consultório 3" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+          </div>
+        </div>
+
+        <!-- Descrição do Problema -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Qual é o problema?</label>
+          <textarea id="ticket-issue" required rows="3" placeholder="Ex: A impressora não imprime, internet caiu, sistema lento..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition"></textarea>
+        </div>
+
+        <button type="submit" id="btn-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm py-3.5 rounded-xl shadow-lg transition flex justify-center items-center gap-2 mt-2">
+          <i class="fa-solid fa-paper-plane"></i> Enviar Chamado
+        </button>
+      </form>
+
+      <!-- Mensagem de Sucesso (Oculta por padrão) -->
+      <div id="success-message" class="hidden text-center py-6 space-y-3">
+        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-3xl mb-2">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h2 class="font-bold text-slate-800 text-lg">Chamado Aberto!</h2>
+        <p class="text-sm text-slate-600">A equipa de TI já foi notificada e resolverá o problema em breve.</p>
+        <button type="button" onclick="resetForm()" class="mt-4 px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm">Abrir outro chamado</button>
+      </div>
+
+    </div>
+
+    <div class="mt-8 text-center text-[10px] text-slate-400">
+      <p>InfraGest &copy; <script>document.write(new Date().getFullYear())</script> - Departamento de TI</p>
+    </div>
+  </main>
+
+  <!-- LÓGICA DE CONEXÃO -->
+  <script>
+    // As mesmas credenciais da sua aplicação principal
+    const SUPABASE_URL = "https://gxudselvhdzwxzksgxdf.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_wM00yOgydhrwQmv3Qy8Wdg_ksXNtQ9H"; 
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let internalMachineId = null;
+
+    // Quando a página carrega, verifica se há um código na URL (ex: ?gab=991017251100)
+    window.onload = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const gabCodeUrl = urlParams.get('gab');
+
+      if (gabCodeUrl) {
+        document.getElementById('ticket-gab').value = gabCodeUrl;
+        await checkMachineExists(gabCodeUrl);
+      }
+
+      // Validação em tempo real caso o utilizador digite o gabinete à mão
+      document.getElementById('ticket-gab').addEventListener('blur', (e) => {
+        if(e.target.value.length > 3) checkMachineExists(e.target.value);
+      });
+    };
+
+    // Consulta no banco se o gabinete existe para vincular corretamente o ID
+    async function checkMachineExists(code) {
+      const { data, error } = await supabaseClient.from('machines').select('id').eq('code', code).single();
+      
+      const info = document.getElementById('machine-info');
+      if (data && !error) {
+        internalMachineId = data.id;
+        info.classList.remove('hidden');
+        info.innerHTML = '<i class="fa-solid fa-check-circle mr-1"></i> Equipamento localizado no sistema.';
+        info.className = "text-[10px] font-semibold text-emerald-600 mt-1";
+      } else {
+        internalMachineId = null;
+        info.classList.remove('hidden');
+        info.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Etiqueta não localizada, mas pode continuar.';
+        info.className = "text-[10px] font-semibold text-amber-500 mt-1";
+      }
+    }
+
+    // Enviar o chamado para o Supabase
+    async function submitTicket(e) {
+      e.preventDefault();
+      
+      const btn = document.getElementById('btn-submit');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> A enviar...';
+      btn.disabled = true;
+
+      const gabCode = document.getElementById('ticket-gab').value.trim();
+      const requester = document.getElementById('ticket-name').value.trim();
+      const issue = document.getElementById('ticket-issue').value.trim();
+
+      const newTicket = {
+        id: 'tk_' + Date.now(),
+        machine_id: internalMachineId, // Pode ser null se a máquina não for encontrada
+        requester_name: requester + (internalMachineId ? '' : ` (Gab relatado: ${gabCode})`),
+        issue_description: issue,
+        status: 'Aberto'
+      };
+
+      const { error } = await supabaseClient.from('helpdesk_tickets').insert([newTicket]);
+
+      if (error) {
+        alert("Erro ao enviar o chamado: " + error.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      } else {
+        document.getElementById('ticket-form').classList.add('hidden');
+        document.getElementById('success-message').classList.remove('hidden');
+      }
+    }
+
+    // Resetar para um novo chamado
+    function resetForm() {
+      document.getElementById('ticket-name').value = '';
+      document.getElementById('ticket-issue').value = '';
+      document.getElementById('ticket-form').classList.remove('hidden');
+      document.getElementById('success-message').classList.add('hidden');
+      document.getElementById('btn-submit').innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar Chamado';
+      document.getElementById('btn-submit').disabled = false;
+    }
+  </script>
+</body>
+</html>
