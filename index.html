@@ -340,7 +340,7 @@
     </div>
   </div>
 
-  <!-- OUTROS MODAIS (Pastas, Export, Sync, Users) -->
+  <!-- OUTROS MODAIS -->
   <div id="modal-folder" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl"><div class="px-5 py-4 border-b flex justify-between items-center"><h3 class="font-bold text-sm">Nova Pasta</h3><button onclick="document.getElementById('modal-folder').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div>
       <form onsubmit="saveFolder(event)" class="p-5 space-y-4 text-xs"><input type="hidden" id="folder-id">
@@ -355,8 +355,19 @@
     <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl flex flex-col max-h-[85vh]"><div class="px-5 py-4 border-b flex justify-between items-center bg-indigo-50 flex-none"><h3 class="font-bold text-indigo-900 text-sm">Selecionar Setor</h3><button onclick="document.getElementById('modal-select-folder').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div><div class="p-4 bg-slate-50 flex-none"><input type="text" id="interactive-folder-search" oninput="filterInteractiveFolders(this.value)" placeholder="Filtrar..." class="w-full border rounded-xl px-3 py-2 text-xs shadow-sm"></div><div id="interactive-folders-list" class="p-4 space-y-2 overflow-y-auto flex-1 text-xs"></div></div>
   </div>
 
+  <!-- MODAL: TODAS AS PASTAS (ATUALIZADO E RESTAURADO) -->
   <div id="modal-all-folders" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl flex flex-col max-h-[85vh]"><div class="px-5 py-4 border-b flex justify-between items-center bg-indigo-50"><h3 class="font-bold text-indigo-900 text-sm">Todas as Pastas</h3><button onclick="document.getElementById('modal-all-folders').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div><div id="modal-all-folders-container" class="p-5 space-y-2 overflow-y-auto flex-1 text-xs"></div></div>
+    <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl flex flex-col max-h-[85vh]">
+      <div class="px-5 py-4 border-b flex justify-between items-center bg-indigo-50 flex-none">
+        <h3 class="font-bold text-indigo-900 text-sm">Todas as Pastas</h3>
+        <button onclick="document.getElementById('modal-all-folders').classList.add('hidden')" class="text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="p-4 bg-slate-50 flex flex-wrap gap-2 flex-none">
+        <input type="text" id="modal-folder-search" oninput="filterModalFolders(this.value)" placeholder="Filtrar..." class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-blue-500">
+        <button onclick="exportAllFoldersZip()" class="bg-blue-600 text-white font-bold px-2.5 py-2 rounded-lg text-xs shadow-sm"><i class="fa-solid fa-file-zipper"></i> ZIP</button>
+      </div>
+      <div id="modal-all-folders-container" class="p-5 space-y-2 overflow-y-auto flex-1 text-xs"></div>
+    </div>
   </div>
 
   <div id="modal-user" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
@@ -611,7 +622,7 @@
       });
     }
 
-    // AQUI ESTÁ A FUNÇÃO CORRIGIDA =============================================
+    // AQUI ESTÁ A FUNÇÃO CORRIGIDA DE ABRIR A PASTA DE MÁQUINAS 
     function openSectorItems(id) {
       currentSectorId = id;
       const s = sectors.find(x => x.id === id);
@@ -624,7 +635,6 @@
         renderMachines();
       }
     }
-    // ==========================================================================
 
     async function addNewFloorPrompt(){const n=prompt("Nome Andar:");if(n){const obj={id:'floor_'+Date.now(),name:n};await supabaseClient.from('floors').insert([obj]);loadDataFromServer();currentFloorId=obj.id;}}
     async function editCurrentFloor(){const f=floors.find(x=>x.id===currentFloorId);if(f){const n=prompt("Renomear:",f.name);if(n){await supabaseClient.from('floors').update({name:n}).eq('id',f.id);loadDataFromServer();}}}
@@ -723,7 +733,38 @@
     async function saveUser(e){e.preventDefault();const u={id:'usr_'+Date.now(),username:document.getElementById('modal-username').value,password:document.getElementById('modal-password').value,role:document.getElementById('modal-role').value};await supabaseClient.from('users').insert([u]);document.getElementById('modal-user').classList.add('hidden');loadDataFromServer();}
     async function deleteUser(id){if(confirm("Remover utilizador?")){await supabaseClient.from('users').delete().eq('id',id);loadDataFromServer();}}
     function handleGlobalSearch(q){ /* Pesquisa simplificada no DOM / abas */ }
-    function openAllFoldersModal(){document.getElementById('modal-all-folders').classList.remove('hidden');const c=document.getElementById('modal-all-folders-container');c.innerHTML='';sectors.forEach(s=>c.innerHTML+=`<div class="p-2 border bg-white rounded mb-1 font-bold text-xs">${s.name}</div>`);}
+
+    // AQUI ESTÃO AS NOVAS FUNÇÕES DO MODAL "TODAS AS PASTAS" ======
+    function openAllFoldersModal() { 
+      document.getElementById('modal-all-folders').classList.remove('hidden'); 
+      document.getElementById('modal-folder-search').value = '';
+      renderAllFoldersList(sectors);
+    }
+    
+    function filterModalFolders(q) {
+      const filtered = sectors.filter(s => s.name.toLowerCase().includes(q.toLowerCase()));
+      renderAllFoldersList(filtered);
+    }
+    
+    function renderAllFoldersList(list) {
+      const c = document.getElementById('modal-all-folders-container'); 
+      c.innerHTML = ''; 
+      if(list.length === 0) { c.innerHTML = '<p class="text-slate-400 text-center text-sm py-4">Nenhuma pasta encontrada.</p>'; return; }
+      list.forEach(s => {
+        const floor = floors.find(f => f.id === s.floor_id);
+        const floorName = floor ? floor.name : 'Sem Andar';
+        c.innerHTML += `<div class="p-3 border border-slate-200 bg-white rounded-xl mb-2 shadow-sm flex flex-col cursor-pointer hover:bg-slate-50 transition" onclick="document.getElementById('modal-all-folders').classList.add('hidden'); currentFloorId='${s.floor_id}'; openSectorItems('${s.id}')">
+          <span class="text-[10px] text-blue-600 font-bold uppercase mb-0.5">${floorName}</span>
+          <span class="font-bold text-slate-800 text-sm">${s.name}</span>
+        </div>`;
+      });
+    }
+
+    async function exportAllFoldersZip() {
+      document.getElementById('modal-all-folders').classList.add('hidden');
+      alert("Para exportação ZIP de todos os relatórios formatados, utilize o painel Administrador ou o botão de Exportar na tela inicial.");
+    }
+    // ===============================================================
   </script>
 </body>
 </html>
