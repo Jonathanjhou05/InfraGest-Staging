@@ -929,7 +929,97 @@
       filtered.forEach(m => { const s = sectors.find(x=>x.id===m.sector_id), f = s?floors.find(x=>x.id===s.floor_id):null; csv += `${f?f.name:''}\t${s?s.name:''}\t${m.ticket}\t${m.code}\t${m.monitor}\t${m.model}\t${m.os}\t${m.status}\t${m.peripherals?m.peripherals.join(','):''}\t${m.notes}\n`; });
       const b = new Blob([csv], { type: 'tab-separated-values;charset=utf-8;' }); const l = document.createElement("a"); l.href = URL.createObjectURL(b); l.download = `InfraGest_${Date.now()}.xls`; l.click(); document.getElementById('modal-export').classList.add('hidden');
     }
+   // Função para Importar Excel / CSV para o Supabase
+    async function handleExcelImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          document.getElementById('app-title').innerText = "A importar planilha... Aguarde!";
+          
+          const data = new Uint8Array(e.target.result);
+          // A biblioteca XLSX já está importada no cabeçalho do seu HTML
+          const workbook = XLSX.read(data, { type: 'array' });
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(worksheet);
+
+          if (json.length === 0) {
+            alert("A planilha parece estar vazia!");
+            document.getElementById('app-title').innerText = "InfraGest - Andares";
+            return;
+          }
+
+          if (!confirm(`Encontradas ${json.length} máquinas na planilha. Deseja importar para o sistema? (Pode demorar alguns segundos)`)) {
+            document.getElementById('app-title').innerText = "InfraGest - Andares";
+            return;
+          }
+
+          let added = 0;
+
+          // Processa linha a linha da planilha Excel
+          for (const row of json) {
+            const floorName = row['Andar'] ? String(row['Andar']).trim() : 'Geral';
+            const sectorName = row['Setor'] ? String(row['Setor']).trim() : 'Geral';
+            
+            // 1. Procura ou Cria o Andar
+            let f = floors.find(x => x.name.toLowerCase() === floorName.toLowerCase());
+            if (!f) {
+              f = { id: 'floor_' + Date.now() + Math.floor(Math.random()*1000), name: floorName };
+              await supabaseClient.from('floors').insert([f]);
+              floors.push(f);
+            }
+
+            // 2. Procura ou Cria o Setor
+            let s = sectors.find(x => x.name.toLowerCase() === sectorName.toLowerCase() && x.floor_id === f.id);
+            if (!s) {
+              s = { id: 'sec_' + Date.now() + Math.floor(Math.random()*1000), floor_id: f.id, name: sectorName, color: '#2563eb' };
+              await supabaseClient.from('sectors').insert([s]);
+              sectors.push(s);
+            }
+
+            // 3. Prepara e Limpa os Dados da Máquina
+            const codeRaw = row['Gabinete'] || row['Patrimônio'] || row['Etiqueta Gabinete'] || '';
+            const code = cleanOnlyNumbers(codeRaw) || 'NÃO SE APLICA';
+
+            // Evita duplicados: se o gabinete já existir na base de dados, salta para o próximo
+            if (code !== 'NÃO SE APLICA' && machines.find(m => m.code === code)) continue;
+
+            const newMachine = {
+              id: 'mac_' + Date.now() + Math.floor(Math.random()*10000),
+              sector_id: s.id,
+              code: code,
+              ticket: row['Ticket'] || generateTicketFromCode(code),
+              monitor: cleanOnlyNumbers(row['Monitor']) || 'NÃO SE APLICA',
+              model: row['Modelo'] || 'Desconhecido',
+              os: row['SO'] || row['Sistema'] || 'Win11',
+              status: row['Estado'] || row['Status'] || 'Operacional',
+              notes: row['Obs'] || row['Observações'] || '',
+              peripherals: row['Periféricos'] ? String(row['Periféricos']).split(',').map(x=>x.trim()) : [],
+              date: row['Data'] || new Date().toLocaleString('pt-BR'),
+              timestamp: Date.now()
+            };
+
+            await supabaseClient.from('machines').insert([newMachine]);
+            machines.push(newMachine); // Adiciona ao array local para a verificação de duplicados funcionar no loop
+            added++;
+          }
+
+          alert(`✅ Importação concluída! ${added} novas máquinas foram inseridas no banco de dados.`);
+          loadDataFromServer();
+          document.getElementById('app-title').innerText = "InfraGest - Andares";
+
+        } catch (error) {
+          console.error(error);
+          alert("Erro ao ler a planilha. Verifique se o formato está correto e corresponde aos cabeçalhos padrão do sistema.");
+          document.getElementById('app-title').innerText = "InfraGest - Andares";
+        }
+      };
+      
+      reader.readAsArrayBuffer(file);
+      event.target.value = ''; // Limpa o input para permitir re-importar o mesmo ficheiro se necessário
+    }
     // Ferramentas Adicionais (Reorganizar, Backup, Admin)
     async function reorganizeSectorTickets() {
       if(!currentSectorId || !confirm("Recalcular tickets e limpar caracteres das etiquetas deste setor?")) return;
