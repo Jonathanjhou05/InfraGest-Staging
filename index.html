@@ -329,58 +329,43 @@
         <h3 id="modal-machine-title" class="font-bold text-slate-800">Cadastrar Máquina</h3>
         <button onclick="closeMachineModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
-
       <form onsubmit="saveMachine(event)" class="p-5 space-y-4 overflow-y-auto flex-1">
         <input type="hidden" id="edit-machine-id">
-
+        <!-- Gabinete -->
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Gabinete / Host (12 Dígitos) *</label>
-          <div class="flex gap-2">
-            <input type="text" id="machine-code" maxlength="12" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" placeholder="Ex: 991017251100" class="flex-1 border border-slate-300 rounded-lg p-2.5 text-sm font-mono font-bold">
-            <button type="button" onclick="document.getElementById('machine-code').value='NÃO SE APLICA'" class="bg-amber-100 text-amber-700 px-3 rounded-lg text-[10px] font-bold">N/A</button>
-          </div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Gabinete (12 Dígitos) *</label>
+          <input type="text" id="machine-code" required minlength="12" maxlength="12" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono">
         </div>
-
+        <!-- Monitor -->
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Monitor (Numérico) *</label>
-          <div class="flex gap-2">
-            <input type="text" id="machine-monitor" inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" class="flex-1 border border-slate-300 rounded-lg p-2.5 text-sm font-mono font-bold">
-            <button type="button" onclick="document.getElementById('machine-monitor').value='NÃO SE APLICA'" class="bg-amber-100 text-amber-700 px-3 rounded-lg text-[10px] font-bold">N/A</button>
-          </div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Monitor *</label>
+          <input type="text" id="machine-monitor" required inputmode="numeric" oninput="this.value = this.value.replace(/\D/g, '')" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm font-mono">
         </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Modelo *</label>
-          <input type="text" id="machine-model" placeholder="Ex: Positivo, Dell..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
-        </div>
-
+        <!-- Modelo / OS / Status -->
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">SO *</label>
-            <select id="machine-os" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
-              <option value="Win11">Windows 11</option>
-              <option value="Win10">Windows 10</option>
-              <option value="Linux">Linux</option>
-            </select>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Modelo *</label>
+            <input type="text" id="machine-model" required class="w-full border border-slate-300 rounded-lg p-2 text-sm">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Estado *</label>
-            <select id="machine-status" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
-              <option value="Operacional">Operacional</option>
-              <option value="Manutenção">Em Manutenção</option>
-              <option value="Defeito">Defeito</option>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">SO *</label>
+            <select id="machine-os" required class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+              <option value="Win11" selected>Windows 11</option>
+              <option value="Win10">Windows 10</option>
             </select>
           </div>
         </div>
-
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Observações</label>
-          <textarea id="machine-notes" rows="2" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"></textarea>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Estado *</label>
+          <select id="machine-status" required class="w-full border border-slate-300 rounded-lg p-2.5 text-sm">
+            <option value="Operacional">Operacional</option>
+            <option value="Manutenção">Em Manutenção</option>
+            <option value="Defeito">Defeito</option>
+          </select>
         </div>
-
-        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 flex-none">
-          <button type="button" onclick="closeMachineModal()" class="px-4 py-2 text-xs border rounded-lg">Cancelar</button>
-          <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow">Salvar</button>
+        <div class="flex justify-end pt-2 border-t mt-2">
+          <button type="button" onclick="closeMachineModal()" class="px-4 py-2 text-xs mr-2 border rounded-lg">Cancelar</button>
+          <button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-600 rounded-lg shadow">Salvar</button>
         </div>
       </form>
     </div>
