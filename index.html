@@ -743,11 +743,12 @@
       document.getElementById('modal-machine').classList.remove('hidden');
     }
 
-    async function saveMachine(e) {
+  async function saveMachine(e) {
       e.preventDefault();
       const editId = document.getElementById('edit-machine-id').value;
       const code = document.getElementById('machine-code').value.replace(/\D/g, '');
       const status = document.getElementById('machine-status').value;
+      
       const mData = {
         sector_id: currentSectorId,
         code: code,
@@ -756,7 +757,6 @@
         model: document.getElementById('machine-model').value,
         os: document.getElementById('machine-os').value,
         status: status,
-        notes: document.getElementById('machine-notes').value,
         date: new Date().toLocaleString('pt-BR')
       };
 
@@ -771,8 +771,9 @@
         await supabaseClient.from('machines').insert([mData]);
         logMachineHistory(mData.id, 'Criação', 'Equipamento registado.');
       }
+      
       closeMachineModal();
-      await loadDataFromServer(); // Atualiza tudo
+      await loadDataFromServer(); // Atualiza a vista instantaneamente
     }
     async function deleteMachine(id) {
       if(confirm("Excluir máquina?")) {
