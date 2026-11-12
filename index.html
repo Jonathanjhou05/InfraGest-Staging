@@ -611,6 +611,21 @@
       });
     }
 
+    // AQUI ESTÁ A FUNÇÃO CORRIGIDA =============================================
+    function openSectorItems(id) {
+      currentSectorId = id;
+      const s = sectors.find(x => x.id === id);
+      if (s) {
+        document.getElementById('current-sector-title').innerText = s.name;
+        switchTab('items');
+        document.getElementById('view-items').classList.remove('hidden');
+        document.getElementById('nav-sectors').classList.replace('text-slate-400', 'text-blue-600');
+        document.getElementById('btn-back').classList.remove('hidden');
+        renderMachines();
+      }
+    }
+    // ==========================================================================
+
     async function addNewFloorPrompt(){const n=prompt("Nome Andar:");if(n){const obj={id:'floor_'+Date.now(),name:n};await supabaseClient.from('floors').insert([obj]);loadDataFromServer();currentFloorId=obj.id;}}
     async function editCurrentFloor(){const f=floors.find(x=>x.id===currentFloorId);if(f){const n=prompt("Renomear:",f.name);if(n){await supabaseClient.from('floors').update({name:n}).eq('id',f.id);loadDataFromServer();}}}
     async function deleteCurrentFloor(){if(floors.length>1&&confirm("Eliminar Andar?")){await supabaseClient.from('floors').delete().eq('id',currentFloorId);currentFloorId=null;loadDataFromServer();}}
@@ -620,7 +635,6 @@
     function editFolder(id){const s=sectors.find(x=>x.id===id);if(s){openFolderModal();document.getElementById('folder-id').value=s.id;document.getElementById('folder-name').value=s.name;}}
     async function deleteFolder(id){if(confirm("Excluir Setor?")){await supabaseClient.from('sectors').delete().eq('id',id);loadDataFromServer();}}
 
-    function openSectorItems(id){currentSectorId=id;const s=sectors.find(x=>x.id===id);if(s){document.getElementById('current-sector-title').innerText=s.name;switchTab('items');document.getElementById('btn-back').classList.remove('hidden');renderMachines();}}
     function filtrarPorEstado(s){currentFilterStatus=s;if(currentSectorId)renderMachines();else{if(sectors.length)openSectorItems(sectors[0].id);}}
     function filterMachinesByStatus(s){currentFilterStatus=s;renderMachines();}
     function handleMachineSortChange(v){currentMachineSort=v;renderMachines();}
