@@ -82,7 +82,24 @@
       <h1 id="app-title" class="font-bold text-lg leading-tight truncate">InfraGest</h1>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="openSyncOptionsModal()" title="Sync Sheets" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1.5 shadow" id="btn-sync-sheets"><i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">Sync</span></button>
+      <!-- Botão Sync e Barra de Progresso Integrada -->
+      <div class="relative flex flex-col items-end">
+        <button onclick="openSyncOptionsModal()" title="Sync Sheets" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1.5 shadow" id="btn-sync-sheets">
+          <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">Sync</span>
+        </button>
+        
+        <!-- Barra de Progresso Flutuante com Porcentagem -->
+        <div id="sync-progress-box" class="hidden absolute top-full right-0 mt-1.5 w-44 bg-white p-2.5 rounded-xl shadow-xl border border-slate-200 z-30 text-[10px] space-y-1.5">
+          <div class="flex justify-between font-bold text-slate-700">
+            <span id="sync-status-text">A sincronizar...</span>
+            <span id="sync-percentage">0%</span>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div id="sync-progress-bar" class="bg-purple-600 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
       <button onclick="openExportModal()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1.5 shadow"><i class="fa-solid fa-file-excel"></i> <span class="hidden sm:inline">Exportar</span></button>
     </div>
   </header>
@@ -318,7 +335,7 @@
     </button>
   </nav>
 
-  <!-- MODAL: OPÇÕES DE SINCRONIZAÇÃO (DESIGN ORIGINAL RESTAURADO) -->
+  <!-- MODAL: OPÇÕES DE SINCRONIZAÇÃO -->
   <div id="modal-sync-options" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-4">
       <div class="flex justify-between items-center border-b pb-3">
@@ -336,8 +353,8 @@
           <div class="flex items-center gap-3">
             <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
             <div>
-              <span class="block font-bold text-xs">Enviar Apenas Novos</span>
-              <span class="block text-[10px] text-purple-200">Atualiza andares e setores sem duplicar</span>
+              <span class="block font-bold text-xs">Enviar Apenas Novos / Atualizar</span>
+              <span class="block text-[10px] text-purple-200">Atualiza abas por andar sem duplicar</span>
             </div>
           </div>
           <span class="bg-purple-700 text-[10px] font-bold px-2 py-1 rounded-lg">Recomendado</span>
@@ -348,7 +365,7 @@
             <i class="fa-solid fa-list-check text-lg"></i>
             <div>
               <span class="block font-bold text-xs">Sincronizar Tudo (Forçar)</span>
-              <span class="block text-[10px] text-slate-400">Reescreve toda a base na planilha</span>
+              <span class="block text-[10px] text-slate-400">Reescreve toda a base nas abas</span>
             </div>
           </div>
           <span class="bg-slate-700 text-[10px] font-bold px-2 py-1 rounded-lg">Completo</span>
@@ -1072,6 +1089,16 @@
     async function executeSync(mode) {
       document.getElementById('modal-sync-options').classList.add('hidden');
       
+      const progressBox = document.getElementById('sync-progress-box');
+      const progressBar = document.getElementById('sync-progress-bar');
+      const percentageText = document.getElementById('sync-percentage');
+      const statusText = document.getElementById('sync-status-text');
+      
+      progressBox.classList.remove('hidden');
+      progressBar.style.width = '10%';
+      percentageText.innerText = '10%';
+      statusText.innerText = 'A preparar dados...';
+
       const payload = machines.map(m => {
         const s = sectors.find(x => x.id === m.sector_id);
         const f = s ? floors.find(x => x.id === s.floor_id) : null;
@@ -1090,15 +1117,38 @@
         };
       });
 
+      let progress = 20;
+      const interval = setInterval(() => {
+        if(progress < 85) {
+          progress += 15;
+          progressBar.style.width = progress + '%';
+          percentageText.innerText = progress + '%';
+          if(progress > 50) statusText.innerText = 'A enviar p/ Sheets...';
+        }
+      }, 150);
+
       try {
-        await fetch(GOOGLE_SHEETS_WEBHOOK_URLS[0], {
+        const response = await fetch(GOOGLE_SHEETS_WEBHOOK_URLS[0], {
           method: 'POST',
-          mode: 'no-cors',
           body: JSON.stringify({ mode: mode, data: payload })
         });
         
-        alert("✅ Sincronização enviada para o Google Sheets com sucesso!");
+        clearInterval(interval);
+        progressBar.style.width = '100%';
+        percentageText.innerText = '100%';
+        statusText.innerText = 'Concluído!';
+
+        setTimeout(() => {
+          progressBox.classList.add('hidden');
+        }, 2000);
+
+        const result = await response.json();
+        if(result.status === 'success') {
+          alert("✅ Sincronização concluída com sucesso!");
+        }
       } catch (e) {
+        clearInterval(interval);
+        progressBox.classList.add('hidden');
         console.error("Erro no Sync:", e);
         alert("❌ Erro ao comunicar com o Google Sheets.");
       }
