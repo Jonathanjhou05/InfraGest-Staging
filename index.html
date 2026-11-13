@@ -292,7 +292,7 @@
     </section>
   </main>
 
-  <!-- BOTTOM NAVIGATION BAR (COM 6 ABAS OTIMIZADAS E BADGE PERFEITO) -->
+  <!-- BOTTOM NAVIGATION BAR -->
   <nav class="bg-white border-t border-slate-200 flex-none fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-1 shadow-lg">
     <button onclick="switchTab('sectors')" id="nav-sectors" class="flex flex-col items-center justify-center gap-0.5 text-blue-600 w-1/6">
       <i class="fa-solid fa-folder-open text-base"></i><span class="text-[8px] font-medium uppercase">Inventário</span>
@@ -318,7 +318,50 @@
     </button>
   </nav>
 
-  <!-- MODAL: NOVO/EDITAR CHAMADO (NOVO) -->
+  <!-- MODAL: OPÇÕES DE SINCRONIZAÇÃO (DESIGN ORIGINAL RESTAURADO) -->
+  <div id="modal-sync-options" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-rotate text-purple-600"></i> Opções de Sincronização
+        </h3>
+        <button onclick="document.getElementById('modal-sync-options').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500">Como deseja proceder com o envio para o Google Sheets?</p>
+      
+      <div class="space-y-2.5">
+        <button onclick="executeSync('smart')" class="w-full bg-purple-600 hover:bg-purple-700 text-white p-3.5 rounded-xl flex items-center justify-between shadow-md transition text-left">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
+            <div>
+              <span class="block font-bold text-xs">Enviar Apenas Novos</span>
+              <span class="block text-[10px] text-purple-200">Atualiza andares e setores sem duplicar</span>
+            </div>
+          </div>
+          <span class="bg-purple-700 text-[10px] font-bold px-2 py-1 rounded-lg">Recomendado</span>
+        </button>
+
+        <button onclick="executeSync('force')" class="w-full bg-slate-800 hover:bg-slate-900 text-white p-3.5 rounded-xl flex items-center justify-between shadow-md transition text-left">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-list-check text-lg"></i>
+            <div>
+              <span class="block font-bold text-xs">Sincronizar Tudo (Forçar)</span>
+              <span class="block text-[10px] text-slate-400">Reescreve toda a base na planilha</span>
+            </div>
+          </div>
+          <span class="bg-slate-700 text-[10px] font-bold px-2 py-1 rounded-lg">Completo</span>
+        </button>
+      </div>
+
+      <button onclick="document.getElementById('modal-sync-options').classList.add('hidden')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition mt-2">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVO/EDITAR CHAMADO -->
   <div id="modal-helpdesk" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden flex flex-col">
       <div class="px-5 py-4 border-b flex justify-between items-center bg-indigo-50">
@@ -509,10 +552,6 @@
     <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl"><div class="px-5 py-4 border-b flex justify-between"><h3 class="font-bold">Novo Utilizador</h3><button onclick="document.getElementById('modal-user').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div>
       <form onsubmit="saveUser(event)" class="p-5 space-y-3"><input type="text" id="modal-username" required placeholder="Usuário" class="w-full border rounded-lg p-2 text-sm"><input type="password" id="modal-password" required placeholder="Senha" class="w-full border rounded-lg p-2 text-sm"><select id="modal-role" class="w-full border rounded-lg p-2 text-sm bg-white"><option value="technician">Técnico</option><option value="admin">Administrador</option></select><button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg mt-2">Salvar</button></form>
     </div>
-  </div>
-
-  <div id="modal-sync-options" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-5 space-y-4"><div class="flex justify-between items-center border-b pb-2"><h3 class="font-bold">Sync Sheets</h3><button onclick="document.getElementById('modal-sync-options').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div><button onclick="executeSync('all')" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl"><i class="fa-solid fa-cloud-arrow-up mr-2"></i> Enviar Dados</button></div>
   </div>
 
   <div id="modal-export" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
@@ -717,7 +756,7 @@
       alert("RMA gerado!"); loadDataFromServer();
     }
 
-    // --- HELPDESK LÓGICA (MELHORADA COM PRIORIDADES, CATEGORIAS E NOVO CHAMADO) ---
+    // --- HELPDESK LÓGICA ---
     function openHelpdeskModal() {
       document.getElementById('hd-machine-code').value = '';
       document.getElementById('hd-requester').value = '';
@@ -736,7 +775,6 @@
       const machine = machines.find(m => m.code === code);
       const machineId = machine ? machine.id : null;
 
-      // Formato compatível com a tabela base para evitar erros 400 de colunas em falta
       const newTicket = {
         id: 'hd_' + Date.now(),
         machine_id: machineId,
@@ -748,24 +786,16 @@
 
       try {
         const { error } = await supabaseClient.from('helpdesk_tickets').insert([newTicket]);
-        if (error) {
-          console.error("Erro Supabase:", error);
-          alert("Erro ao gravar chamado no servidor. Verifique a consola.");
-          return;
-        }
+        if (error) { console.error(error); alert("Erro ao gravar chamado."); return; }
 
         if(machineId) {
           await logMachineHistory(machineId, 'Helpdesk', `Chamado aberto [${category} - ${priority}]: "${desc}"`);
         }
-        
         document.getElementById('modal-helpdesk').classList.add('hidden');
         alert("✅ Chamado registado com sucesso!");
         await loadDataFromServer();
         switchTab('tickets');
-      } catch (err) {
-        console.error(err);
-        alert("Ocorreu um erro inesperado.");
-      }
+      } catch (err) { console.error(err); }
     }
 
     function renderTickets(statusFilter) {
@@ -778,35 +808,27 @@
       
       let filtered = helpdeskTickets.filter(t => t.status === statusFilter);
       if(priorityFilter !== 'Todas') {
-        filtered = filtered.filter(t => t.priority === priorityFilter);
+        filtered = filtered.filter(t => t.issue_description.includes(`[${priorityFilter}]`));
       }
 
       if (filtered.length === 0) { c.innerHTML = `<div class="text-center py-6 text-slate-400 text-sm">Nenhum chamado ${statusFilter.toLowerCase()}.</div>`; return; }
 
       filtered.forEach(ticket => {
-        const m = machines.find(x => x.id === ticket.machine_id), code = m ? m.code : (ticket.machine_code || 'N/A');
+        const m = machines.find(x => x.id === ticket.machine_id);
         const dateStr = new Date(ticket.created_at).toLocaleString('pt-BR');
         
-        // Cores de prioridade
-        const prioColor = ticket.priority === 'Urgente' ? 'bg-red-100 text-red-700 border-red-200' : ticket.priority === 'Média' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200';
-        const catBadge = ticket.category ? `<span class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] font-bold px-2 py-0.5 rounded">${ticket.category}</span>` : '';
-
         const act = statusFilter === 'Aberto' ? 
           `<button onclick="resolveTicket('${ticket.id}')" class="w-full mt-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs py-2 rounded-lg transition">Resolver Chamado</button>` : 
-          `<div class="mt-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-[11px] text-slate-600"><strong>Resolução:</strong> ${ticket.resolution_notes||'N/A'} <br><span class="text-[10px] text-slate-400">Técnico: ${ticket.technician || 'N/A'}</span></div>`;
+          `<div class="mt-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-[11px] text-slate-600"><strong>Resolução:</strong> ${ticket.resolution_notes||'N/A'}</div>`;
         
         c.innerHTML += `
           <div class="bg-white p-4 rounded-xl shadow-sm border ${statusFilter==='Aberto'?'border-l-4 border-amber-400':'border-slate-200'} space-y-2">
             <div class="flex justify-between items-start">
               <div>
-                <div class="flex items-center gap-1.5 mb-1">
-                  <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${prioColor}">${ticket.priority || 'Média'}</span>
-                  ${catBadge}
-                  <span class="text-[10px] text-slate-400">${dateStr}</span>
-                </div>
-                <h4 class="font-bold text-slate-800 text-sm"><i class="fa-regular fa-user mr-1 text-slate-400"></i> ${ticket.requester_name}</h4>
+                <span class="text-[10px] text-slate-400">${dateStr}</span>
+                <h4 class="font-bold text-slate-800 text-sm mt-0.5"><i class="fa-regular fa-user mr-1 text-slate-400"></i> ${ticket.requester_name}</h4>
               </div>
-              <button onclick="${m?`openMachineDetails('${m.id}')`:''}" class="bg-slate-100 hover:bg-slate-200 text-blue-700 font-mono text-[10px] px-2.5 py-1 rounded-lg font-bold transition">Gab: ${code}</button>
+              <button onclick="${m?`openMachineDetails('${m.id}')`:''}" class="bg-slate-100 text-blue-700 font-mono text-[10px] px-2 py-1 rounded font-bold">Ver Máq</button>
             </div>
             <p class="text-xs text-slate-700 bg-amber-50/40 p-2.5 rounded-lg border border-amber-100/60 italic">"${ticket.issue_description}"</p>
             ${act}
@@ -819,7 +841,7 @@
       const t = helpdeskTickets.find(x => x.id === id); if(!t) return;
       const techName = currentUser ? currentUser.username : 'Técnico';
       
-      await supabaseClient.from('helpdesk_tickets').update({ status: 'Resolvido', resolved_at: new Date().toISOString(), resolution_notes: n||'Sem detalhes', technician: techName }).eq('id', id);
+      await supabaseClient.from('helpdesk_tickets').update({ status: 'Resolvido', resolved_at: new Date().toISOString(), resolution_notes: n||'Sem detalhes' }).eq('id', id);
       if(t.machine_id) await logMachineHistory(t.machine_id, 'Manutenção', `Helpdesk resolvido por ${techName}: "${t.issue_description}". Solução: ${n||'Sem detalhes'}`);
       loadDataFromServer();
     }
@@ -1047,13 +1069,9 @@
       document.getElementById('modal-sync-options').classList.remove('hidden');
     }
 
-    async function executeSync() {
-      const btn = document.querySelector('#modal-sync-options button');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> A enviar dados...';
-      btn.disabled = true;
-
-      // Mapeia rigorosamente os dados para a planilha
+    async function executeSync(mode) {
+      document.getElementById('modal-sync-options').classList.add('hidden');
+      
       const payload = machines.map(m => {
         const s = sectors.find(x => x.id === m.sector_id);
         const f = s ? floors.find(x => x.id === s.floor_id) : null;
@@ -1073,21 +1091,47 @@
       });
 
       try {
-        const response = await fetch(GOOGLE_SHEETS_WEBHOOK_URLS[0], {
+        await fetch(GOOGLE_SHEETS_WEBHOOK_URLS[0], {
           method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
+          mode: 'no-cors',
+          body: JSON.stringify({ mode: mode, data: payload })
         });
         
-        document.getElementById('modal-sync-options').classList.add('hidden');
-        alert("✅ Sincronização concluída com sucesso! Verifique a planilha.");
+        alert("✅ Sincronização enviada para o Google Sheets com sucesso!");
       } catch (e) {
         console.error("Erro no Sync:", e);
-        alert("❌ Erro ao sincronizar com a planilha. Verifique a ligação ou o URL do Webhook.");
-      } finally {
-        btn.innerHTML = originalText;
-        btn.disabled = false;
+        alert("❌ Erro ao comunicar com o Google Sheets.");
       }
+    }
+
+    function openExportModal(){const c=document.getElementById('export-sectors-checkboxes');c.innerHTML='';sectors.forEach(s=>c.innerHTML+=`<label class="flex items-center gap-2 p-1"><input type="checkbox" name="export-sector-chk" value="${s.id}" checked class="w-4 h-4 text-blue-600"><span class="font-medium">${s.name}</span></label>`);document.getElementById('modal-export').classList.remove('hidden');}
+    function generateAndDownloadCSV(){
+      const ids=Array.from(document.querySelectorAll('input[name="export-sector-chk"]:checked')).map(x => x.value),f=machines.filter(m=>ids.includes(m.sector_id));
+      let csv="\uFEFFAndar\tSetor\tTicket\tGabinete\tMonitor\tModelo\tSO\tEstado\tPeriféricos\tObs\n";
+      f.forEach(m=>{const s=sectors.find(x=>x.id===m.sector_id),fl=s?floors.find(x=>x.id===s.floor_id):null;csv+=`${fl?fl.name:''}\t${s?s.name:''}\t${m.ticket}\t${m.code}\t${m.monitor}\t${m.model}\t${m.os}\t${m.status}\t${m.peripherals?m.peripherals.join(','):''}\t${m.notes}\n`;});
+      const b=new Blob([csv],{type:'tab-separated-values;charset=utf-8;'}),l=document.createElement("a");l.href=URL.createObjectURL(b);l.download=`InfraGest_${Date.now()}.xls`;l.click();document.getElementById('modal-export').classList.add('hidden');
+    }
+
+    function exportDatabaseJson(){const j=JSON.stringify({floors,sectors,machines,customPeripherals:customPeripheralsList,customModels:customModelsList},null,2);const b=new Blob([j],{type:'application/json'}),l=document.createElement("a");l.href=URL.createObjectURL(b);l.download=`Backup_${Date.now()}.json`;l.click();}
+    async function importDatabaseJson(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async(evt)=>{try{const d=JSON.parse(evt.target.result);if(!confirm("Sobrescrever servidor?"))return;for(const fl of d.floors||[])await supabaseClient.from('floors').insert([fl]);for(const s of d.sectors||[])await supabaseClient.from('sectors').insert([s]);for(const m of d.machines||[])await supabaseClient.from('machines').insert([m]);alert("Restaurado!");loadDataFromServer();}catch(err){alert("JSON inválido.");}};r.readAsText(f);}
+    
+    function renderUsers(){const c=document.getElementById('users-list');c.innerHTML='';usersList.forEach(u=>c.innerHTML+=`<div class="bg-slate-50 p-2 border rounded flex justify-between"><span>${u.username} (${u.role})</span><button onclick="deleteUser('${u.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div>`);}
+    function openUserModal(){document.getElementById('modal-user').classList.remove('hidden');}
+    async function saveUser(e){e.preventDefault();const u={id:'usr_'+Date.now(),username:document.getElementById('modal-username').value,password:document.getElementById('modal-password').value,role:document.getElementById('modal-role').value};await supabaseClient.from('users').insert([u]);document.getElementById('modal-user').classList.add('hidden');loadDataFromServer();}
+    async function deleteUser(id){if(confirm("Remover utilizador?")){await supabaseClient.from('users').delete().eq('id',id);loadDataFromServer();}}
+    
+    // Pesquisa Global Inteligente
+    function handleGlobalSearch(q){
+      const query = q.toLowerCase();
+      if(!query) { renderFloorsAndSectors(); return; }
+      const matched = machines.filter(m => String(m.code).includes(query) || String(m.monitor).includes(query) || String(m.model).toLowerCase().includes(query));
+      const sc = document.getElementById('sectors-list'); sc.innerHTML = '';
+      if(matched.length === 0) { sc.innerHTML = '<div class="p-6 text-center text-slate-500 bg-white rounded-xl">Nenhuma máquina encontrada.</div>'; return; }
+      matched.forEach(m => {
+        const sec = sectors.find(x => x.id === m.sector_id);
+        const secName = sec ? sec.name : 'Desconhecido';
+        sc.innerHTML += `<div class="bg-white p-3 rounded-xl border flex flex-col cursor-pointer mb-2" onclick="openMachineDetails('${m.id}')"><div class="flex justify-between items-start"><div><span class="font-mono font-bold text-blue-700">Gab: ${m.code}</span><p class="text-xs font-medium text-slate-800">${m.model} (${secName})</p><p class="text-[10px] text-purple-600">Ticket: ${m.ticket}</p></div><span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full">${m.status}</span></div></div>`;
+      });
     }
 
     // ====== FUNÇÕES DA JANELA "TODAS AS PASTAS" ======
