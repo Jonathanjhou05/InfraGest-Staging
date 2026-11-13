@@ -351,8 +351,18 @@
     </div>
   </div>
 
+  <!-- MODAL: SELECIONAR SETOR PARA MOVER MÁQUINA (MODERNO E MELHORADO) -->
   <div id="modal-select-folder" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl flex flex-col max-h-[85vh]"><div class="px-5 py-4 border-b flex justify-between items-center bg-indigo-50 flex-none"><h3 class="font-bold text-indigo-900 text-sm">Selecionar Setor</h3><button onclick="document.getElementById('modal-select-folder').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div><div class="p-4 bg-slate-50 flex-none"><input type="text" id="interactive-folder-search" oninput="filterInteractiveFolders(this.value)" placeholder="Filtrar..." class="w-full border rounded-xl px-3 py-2 text-xs shadow-sm"></div><div id="interactive-folders-list" class="p-4 space-y-2 overflow-y-auto flex-1 text-xs"></div></div>
+    <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl flex flex-col max-h-[85vh]">
+      <div class="px-5 py-4 border-b flex justify-between items-center bg-indigo-50 flex-none">
+        <h3 class="font-bold text-indigo-900 text-sm flex items-center gap-2"><i class="fa-solid fa-folder-tree"></i> Selecionar Setor</h3>
+        <button onclick="document.getElementById('modal-select-folder').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="p-4 bg-slate-50 flex-none border-b border-slate-100">
+        <input type="text" id="interactive-folder-search" oninput="filterInteractiveFolders(this.value)" placeholder="Filtrar por nome do setor ou andar..." class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs shadow-sm focus:outline-none focus:border-blue-500">
+      </div>
+      <div id="interactive-folders-list" class="p-4 space-y-2 overflow-y-auto flex-1 text-xs bg-slate-50/50"></div>
+    </div>
   </div>
 
   <!-- MODAL: TODAS AS PASTAS (DESIGN RICO COM AÇÕES EM LOTE) -->
@@ -735,12 +745,57 @@
     async function logMachineHistory(id,action,desc){await supabaseClient.from('machine_history').insert([{machine_id:id,user_name:currentUser?currentUser.username:'Sistema',action_type:action,description:desc}]);}
     async function addManualHistoryLog(e){e.preventDefault();const i=document.getElementById('manual-log-desc');if(i.value&&activeMachineForHistory){await logMachineHistory(activeMachineForHistory,'Nota',i.value);i.value='';fetchMachineHistory(activeMachineForHistory);}}
 
-    function openMoveMachineModal(id){
-      interactiveFolderCallback=async(sec)=>{await supabaseClient.from('machines').update({sector_id:sec.id}).eq('id',id);await logMachineHistory(id,'Mover',`Movido para ${sec.name}`);loadDataFromServer();};
-      const c=document.getElementById('interactive-folders-list');c.innerHTML='';sectors.forEach(s=>c.innerHTML+=`<div class="p-3 border-b cursor-pointer hover:bg-slate-100 font-bold" onclick="document.getElementById('modal-select-folder').classList.add('hidden'); interactiveFolderCallback({id:'${s.id}',name:'${s.name}'})">${s.name}</div>`);
+    // ====== MODAL DE SELECIONAR SETOR PARA MOVER MÁQUINA (MODERNO E MELHORADO) ======
+    function openMoveMachineModal(id) {
+      interactiveFolderCallback = async (sec) => {
+        await supabaseClient.from('machines').update({ sector_id: sec.id }).eq('id', id);
+        await logMachineHistory(id, 'Mover', `Movido para ${sec.name}`);
+        loadDataFromServer();
+      };
+      
+      document.getElementById('interactive-folder-search').value = '';
+      renderInteractiveFoldersList(sectors);
       document.getElementById('modal-select-folder').classList.remove('hidden');
     }
-    function filterInteractiveFolders(q){const c=document.getElementById('interactive-folders-list');c.innerHTML='';sectors.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())).forEach(s=>c.innerHTML+=`<div class="p-3 border-b cursor-pointer hover:bg-slate-100 font-bold" onclick="document.getElementById('modal-select-folder').classList.add('hidden'); interactiveFolderCallback({id:'${s.id}',name:'${s.name}'})">${s.name}</div>`);}
+
+    function filterInteractiveFolders(q) {
+      const query = q.toLowerCase();
+      const filtered = sectors.filter(s => {
+        const floor = floors.find(f => f.id === s.floor_id);
+        const floorName = floor ? floor.name.toLowerCase() : '';
+        return s.name.toLowerCase().includes(query) || floorName.includes(query);
+      });
+      renderInteractiveFoldersList(filtered);
+    }
+
+    function renderInteractiveFoldersList(list) {
+      const c = document.getElementById('interactive-folders-list'); 
+      c.innerHTML = ''; 
+      
+      if(list.length === 0) {
+        c.innerHTML = '<p class="text-slate-400 text-center text-sm py-6">Nenhum setor encontrado.</p>';
+        return;
+      }
+      
+      list.forEach(s => {
+        const floor = floors.find(f => f.id === s.floor_id);
+        const floorName = floor ? floor.name : 'Sem Andar';
+        const machineCount = machines.filter(m => m.sector_id === s.id).length;
+        
+        c.innerHTML += `
+        <div class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl hover:border-blue-400 hover:bg-blue-50/40 transition cursor-pointer bg-white shadow-sm mb-2" 
+             onclick="document.getElementById('modal-select-folder').classList.add('hidden'); interactiveFolderCallback({id:'${s.id}', name:'${s.name}'})">
+          <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center flex-none shadow-inner">
+            <i class="fa-solid fa-folder text-lg"></i>
+          </div>
+          <div class="flex-1 min-w-[120px]">
+            <h4 class="font-bold text-slate-800 text-sm leading-tight">${s.name}</h4>
+            <p class="text-[11px] text-slate-500 mt-0.5">Andar: <span class="font-bold text-indigo-900">${floorName}</span></p>
+          </div>
+          <span class="bg-indigo-50 text-indigo-700 font-bold text-[11px] px-2.5 py-1 rounded-full border border-indigo-100 flex-none">${machineCount} máq.</span>
+        </div>`;
+      });
+    }
 
     function openSyncOptionsModal(){document.getElementById('modal-sync-options').classList.remove('hidden');}
     async function executeSync(){
@@ -766,7 +821,7 @@
     async function deleteUser(id){if(confirm("Remover utilizador?")){await supabaseClient.from('users').delete().eq('id',id);loadDataFromServer();}}
     function handleGlobalSearch(q){ /* Pesquisa simplificada no DOM / abas */ }
 
-    // ====== FUNÇÕES DA JANELA "TODAS AS PASTAS" (NOVO DESIGN RICO) ======
+    // ====== FUNÇÕES DA JANELA "TODAS AS PASTAS" (DESIGN RICO COM AÇÕES EM LOTE) ======
     function openAllFoldersModal() { 
       document.getElementById('modal-all-folders').classList.remove('hidden'); 
       document.getElementById('modal-folder-search').value = '';
