@@ -736,26 +736,36 @@
       const machine = machines.find(m => m.code === code);
       const machineId = machine ? machine.id : null;
 
+      // Formato compatível com a tabela base para evitar erros 400 de colunas em falta
       const newTicket = {
         id: 'hd_' + Date.now(),
         machine_id: machineId,
-        machine_code: code,
-        priority: priority,
-        category: category,
         requester_name: requester,
-        issue_description: desc,
+        issue_description: `[${priority}] [${category}] ${desc} (Gab: ${code})`,
         status: 'Aberto',
-        technician: currentUser ? currentUser.username : 'Não atribuído',
         created_at: new Date().toISOString()
       };
 
-      await supabaseClient.from('helpdesk_tickets').insert([newTicket]);
-      if(machineId) {
-        await logMachineHistory(machineId, 'Helpdesk', `Chamado aberto [${category} - ${priority}]: "${desc}"`);
+      try {
+        const { error } = await supabaseClient.from('helpdesk_tickets').insert([newTicket]);
+        if (error) {
+          console.error("Erro Supabase:", error);
+          alert("Erro ao gravar chamado no servidor. Verifique a consola.");
+          return;
+        }
+
+        if(machineId) {
+          await logMachineHistory(machineId, 'Helpdesk', `Chamado aberto [${category} - ${priority}]: "${desc}"`);
+        }
+        
+        document.getElementById('modal-helpdesk').classList.add('hidden');
+        alert("✅ Chamado registado com sucesso!");
+        await loadDataFromServer();
+        switchTab('tickets');
+      } catch (err) {
+        console.error(err);
+        alert("Ocorreu um erro inesperado.");
       }
-      document.getElementById('modal-helpdesk').classList.add('hidden');
-      alert("✅ Chamado registado com sucesso!");
-      loadDataFromServer();
     }
 
     function renderTickets(statusFilter) {
