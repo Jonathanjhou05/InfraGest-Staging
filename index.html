@@ -179,19 +179,30 @@
       <div id="items-list" class="space-y-3"></div>
     </section>
 
-    <!-- VIEW 3: HELPDESK / CHAMADOS -->
+    <!-- VIEW 3: HELPDESK / CHAMADOS (AVANÇADO) -->
     <section id="view-tickets" class="hidden space-y-4">
       <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
         <div>
           <h2 class="font-bold text-base text-slate-800"><i class="fa-solid fa-headset text-indigo-600 mr-1.5"></i> Fila de Atendimento</h2>
-          <p class="text-xs text-slate-500">Chamados de Helpdesk e Suporte</p>
+          <p class="text-xs text-slate-500">Gestão avançada de incidentes e chamados</p>
         </div>
-        <button onclick="loadDataFromServer()" class="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-200 shadow-sm"><i class="fa-solid fa-rotate"></i> Atualizar</button>
+        <div class="flex gap-2">
+          <button onclick="openHelpdeskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1"><i class="fa-solid fa-plus"></i> Novo Chamado</button>
+          <button onclick="loadDataFromServer()" class="bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-200 shadow-sm"><i class="fa-solid fa-rotate"></i></button>
+        </div>
       </div>
 
-      <div class="flex gap-2 border-b border-slate-200 pb-2">
-        <button onclick="renderTickets('Aberto')" id="filter-ticket-Aberto" class="px-4 py-1.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow-sm">Em Aberto</button>
-        <button onclick="renderTickets('Resolvido')" id="filter-ticket-Resolvido" class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shadow-sm">Resolvidos</button>
+      <div class="flex justify-between items-center gap-2">
+        <div class="flex gap-2">
+          <button onclick="renderTickets('Aberto')" id="filter-ticket-Aberto" class="px-4 py-1.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow-sm">Em Aberto</button>
+          <button onclick="renderTickets('Resolvido')" id="filter-ticket-Resolvido" class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shadow-sm">Resolvidos</button>
+        </div>
+        <select id="ticket-priority-filter" onchange="renderTickets(currentTicketFilter)" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-700 shadow-sm focus:outline-none">
+          <option value="Todas">Todas as Prioridades</option>
+          <option value="Urgente">🔴 Urgente</option>
+          <option value="Média">🟡 Média</option>
+          <option value="Baixa">🟢 Baixa</option>
+        </select>
       </div>
 
       <div id="tickets-list" class="space-y-3 pb-4"></div>
@@ -216,7 +227,7 @@
       <div id="rma-list" class="space-y-3 pb-4"></div>
     </section>
 
-    <!-- VIEW 5: ESTATÍSTICAS / DASHBOARD ANALÍTICO (NOVO) -->
+    <!-- VIEW 5: ESTATÍSTICAS / DASHBOARD ANALÍTICO -->
     <section id="view-stats" class="hidden space-y-4 pb-6">
       <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
         <div>
@@ -247,7 +258,7 @@
       </div>
     </section>
 
-    <!-- VIEW 6: ADMIN & SETTINGS -->
+    <!-- VIEW 6: ADMIN -->
     <section id="view-admin" class="hidden space-y-4">
       <div id="admin-restricted-box" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 text-center hidden">
         <i class="fa-solid fa-lock text-3xl text-amber-500 mb-2"></i><h3 class="font-bold text-slate-800 text-sm">Acesso Restrito ao Administrador</h3>
@@ -281,17 +292,17 @@
     </section>
   </main>
 
-  <!-- BOTTOM NAVIGATION BAR (COM 6 ABAS OTIMIZADAS) -->
+  <!-- BOTTOM NAVIGATION BAR (COM 6 ABAS OTIMIZADAS E BADGE PERFEITO) -->
   <nav class="bg-white border-t border-slate-200 flex-none fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-1 shadow-lg">
     <button onclick="switchTab('sectors')" id="nav-sectors" class="flex flex-col items-center justify-center gap-0.5 text-blue-600 w-1/6">
       <i class="fa-solid fa-folder-open text-base"></i><span class="text-[8px] font-medium uppercase">Inventário</span>
     </button>
-    <button onclick="switchTab('tickets')" id="nav-tickets" class="flex flex-col items-center justify-center gap-0.5 text-slate-400 w-1/6 relative">
+    <button onclick="switchTab('tickets')" id="nav-tickets" class="flex flex-col items-center justify-center gap-0.5 text-slate-400 w-1/6">
       <div class="relative inline-flex items-center justify-center">
         <i class="fa-solid fa-headset text-base"></i>
         <span id="ticket-badge" class="hidden absolute -top-1 -right-3.5 bg-red-500 text-white text-[8px] font-bold w-4 h-4 rounded-full shadow-sm flex items-center justify-center">0</span>
       </div>
-      <span class="text-[8px] font-medium uppercase">CHAMADOS</span>
+      <span class="text-[8px] font-medium uppercase">Chamados</span>
     </button>
     <button onclick="switchTab('rma')" id="nav-rma" class="flex flex-col items-center justify-center gap-0.5 text-slate-400 w-1/6">
       <i class="fa-solid fa-truck-fast text-base"></i><span class="text-[8px] font-medium uppercase">RMA</span>
@@ -306,6 +317,54 @@
       <i class="fa-solid fa-gear text-base"></i><span class="text-[8px] font-medium uppercase">Ajustes</span>
     </button>
   </nav>
+
+  <!-- MODAL: NOVO/EDITAR CHAMADO (NOVO) -->
+  <div id="modal-helpdesk" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden flex flex-col">
+      <div class="px-5 py-4 border-b flex justify-between items-center bg-indigo-50">
+        <h3 class="font-bold text-indigo-900 text-sm"><i class="fa-solid fa-headset mr-1.5"></i> Abrir Novo Chamado</h3>
+        <button onclick="document.getElementById('modal-helpdesk').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <form onsubmit="saveHelpdeskTicket(event)" class="p-5 space-y-3 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Gabinete / Património (12 Dig ou N/A) *</label>
+          <input type="text" id="hd-machine-code" required placeholder="Ex: 991017251100" class="w-full border rounded-lg p-2 font-mono font-bold text-blue-800 text-sm focus:outline-none focus:border-blue-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Prioridade *</label>
+            <select id="hd-priority" class="w-full border rounded-lg p-2 bg-white font-bold text-slate-700">
+              <option value="Baixa">🟢 Baixa</option>
+              <option value="Média" selected>🟡 Média</option>
+              <option value="Urgente">🔴 Urgente</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Categoria *</label>
+            <select id="hd-category" class="w-full border rounded-lg p-2 bg-white font-bold text-slate-700">
+              <option value="Hardware">Hardware / Gabinete</option>
+              <option value="Rede">Rede / Conectividade</option>
+              <option value="Impressora">Impressora / Periférico</option>
+              <option value="Software">Software / Sistema</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Solicitante *</label>
+          <input type="text" id="hd-requester" required placeholder="Nome do colaborador / setor" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:border-blue-500">
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-600 mb-1">Descrição do Problema *</label>
+          <textarea id="hd-description" rows="3" required placeholder="Detalhe o incidente..." class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:border-blue-500"></textarea>
+        </div>
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button type="button" onclick="document.getElementById('modal-helpdesk').classList.add('hidden')" class="px-4 py-2 border rounded-lg">Cancelar</button>
+          <button type="submit" class="px-5 py-2 font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow">Registar Chamado</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- MODAL: ADD/EDIT MACHINE -->
   <div id="modal-machine" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -658,36 +717,108 @@
       alert("RMA gerado!"); loadDataFromServer();
     }
 
-    // --- HELPDESK LÓGICA ---
-    function renderTickets(statusFilter) {
-      currentTicketFilter = statusFilter;
-      document.getElementById('filter-ticket-Aberto').className = statusFilter === 'Aberto' ? "px-4 py-1.5 rounded-full text-xs font-bold bg-blue-600 text-white" : "px-4 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-200 text-slate-600";
-      document.getElementById('filter-ticket-Resolvido').className = statusFilter === 'Resolvido' ? "px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-600 text-white" : "px-4 py-1.5 rounded-full text-xs font-bold bg-white border border-slate-200 text-slate-600";
-
-      const c = document.getElementById('tickets-list'); c.innerHTML = '';
-      const filtered = helpdeskTickets.filter(t => t.status === statusFilter);
-      if (filtered.length === 0) { c.innerHTML = `<div class="text-center py-6 text-slate-400">Nenhum chamado ${statusFilter}.</div>`; return; }
-
-      filtered.forEach(ticket => {
-        const m = machines.find(x => x.id === ticket.machine_id), code = m ? m.code : 'Removida', dateStr = new Date(ticket.created_at).toLocaleString('pt-BR');
-        const act = statusFilter === 'Aberto' ? `<button onclick="resolveTicket('${ticket.id}')" class="w-full mt-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-xs py-2 rounded-lg">Resolver Chamado</button>` : `<div class="mt-2 bg-slate-50 p-2 rounded text-[11px] text-slate-600"><strong>Resolução:</strong> ${ticket.resolution_notes||'N/A'}</div>`;
-        c.innerHTML += `<div class="bg-white p-4 rounded-xl border ${statusFilter==='Aberto'?'border-l-4 border-amber-400':'border-slate-200'}"><div class="flex justify-between items-start mb-2"><div><span class="text-[10px] font-bold text-slate-400">${dateStr}</span><h4 class="font-bold text-slate-800 text-sm mt-0.5"><i class="fa-regular fa-user mr-1 text-slate-400"></i> ${ticket.requester_name}</h4></div><button onclick="${m?`openMachineDetails('${m.id}')`:''}" class="bg-slate-100 text-blue-700 font-mono text-[10px] px-2 py-1 rounded font-bold">Gab: ${code}</button></div><p class="text-xs text-slate-700 bg-amber-50/50 p-2.5 rounded-lg border border-amber-100 italic">"${ticket.issue_description}"</p>${act}</div>`;
-      });
+    // --- HELPDESK LÓGICA (MELHORADA COM PRIORIDADES, CATEGORIAS E NOVO CHAMADO) ---
+    function openHelpdeskModal() {
+      document.getElementById('hd-machine-code').value = '';
+      document.getElementById('hd-requester').value = '';
+      document.getElementById('hd-description').value = '';
+      document.getElementById('modal-helpdesk').classList.remove('hidden');
     }
-    async function resolveTicket(id) {
-      const n = prompt("Solução aplicada? (Irá para o prontuário)"); if (n === null) return;
-      const t = helpdeskTickets.find(x => x.id === id); if(!t) return;
-      await supabaseClient.from('helpdesk_tickets').update({ status: 'Resolvido', resolved_at: new Date().toISOString(), resolution_notes: n||'Sem detalhes' }).eq('id', id);
-      if(t.machine_id) await logMachineHistory(t.machine_id, 'Manutenção', `Helpdesk: "${t.issue_description}". Solução: ${n||'Sem detalhes'}`);
+
+    async function saveHelpdeskTicket(e) {
+      e.preventDefault();
+      const code = cleanOnlyNumbers(document.getElementById('hd-machine-code').value);
+      const priority = document.getElementById('hd-priority').value;
+      const category = document.getElementById('hd-category').value;
+      const requester = document.getElementById('hd-requester').value.trim();
+      const desc = document.getElementById('hd-description').value.trim();
+
+      const machine = machines.find(m => m.code === code);
+      const machineId = machine ? machine.id : null;
+
+      const newTicket = {
+        id: 'hd_' + Date.now(),
+        machine_id: machineId,
+        machine_code: code,
+        priority: priority,
+        category: category,
+        requester_name: requester,
+        issue_description: desc,
+        status: 'Aberto',
+        technician: currentUser ? currentUser.username : 'Não atribuído',
+        created_at: new Date().toISOString()
+      };
+
+      await supabaseClient.from('helpdesk_tickets').insert([newTicket]);
+      if(machineId) {
+        await logMachineHistory(machineId, 'Helpdesk', `Chamado aberto [${category} - ${priority}]: "${desc}"`);
+      }
+      document.getElementById('modal-helpdesk').classList.add('hidden');
+      alert("✅ Chamado registado com sucesso!");
       loadDataFromServer();
     }
 
-    // --- DASHBOARD ESTATÍSTICO (NOVO) ---
+    function renderTickets(statusFilter) {
+      currentTicketFilter = statusFilter;
+      document.getElementById('filter-ticket-Aberto').className = statusFilter === 'Aberto' ? "px-4 py-1.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow-sm" : "px-4 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600";
+      document.getElementById('filter-ticket-Resolvido').className = statusFilter === 'Resolvido' ? "px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm" : "px-4 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600";
+
+      const priorityFilter = document.getElementById('ticket-priority-filter').value;
+      const c = document.getElementById('tickets-list'); c.innerHTML = '';
+      
+      let filtered = helpdeskTickets.filter(t => t.status === statusFilter);
+      if(priorityFilter !== 'Todas') {
+        filtered = filtered.filter(t => t.priority === priorityFilter);
+      }
+
+      if (filtered.length === 0) { c.innerHTML = `<div class="text-center py-6 text-slate-400 text-sm">Nenhum chamado ${statusFilter.toLowerCase()}.</div>`; return; }
+
+      filtered.forEach(ticket => {
+        const m = machines.find(x => x.id === ticket.machine_id), code = m ? m.code : (ticket.machine_code || 'N/A');
+        const dateStr = new Date(ticket.created_at).toLocaleString('pt-BR');
+        
+        // Cores de prioridade
+        const prioColor = ticket.priority === 'Urgente' ? 'bg-red-100 text-red-700 border-red-200' : ticket.priority === 'Média' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200';
+        const catBadge = ticket.category ? `<span class="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[10px] font-bold px-2 py-0.5 rounded">${ticket.category}</span>` : '';
+
+        const act = statusFilter === 'Aberto' ? 
+          `<button onclick="resolveTicket('${ticket.id}')" class="w-full mt-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs py-2 rounded-lg transition">Resolver Chamado</button>` : 
+          `<div class="mt-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-[11px] text-slate-600"><strong>Resolução:</strong> ${ticket.resolution_notes||'N/A'} <br><span class="text-[10px] text-slate-400">Técnico: ${ticket.technician || 'N/A'}</span></div>`;
+        
+        c.innerHTML += `
+          <div class="bg-white p-4 rounded-xl shadow-sm border ${statusFilter==='Aberto'?'border-l-4 border-amber-400':'border-slate-200'} space-y-2">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded border ${prioColor}">${ticket.priority || 'Média'}</span>
+                  ${catBadge}
+                  <span class="text-[10px] text-slate-400">${dateStr}</span>
+                </div>
+                <h4 class="font-bold text-slate-800 text-sm"><i class="fa-regular fa-user mr-1 text-slate-400"></i> ${ticket.requester_name}</h4>
+              </div>
+              <button onclick="${m?`openMachineDetails('${m.id}')`:''}" class="bg-slate-100 hover:bg-slate-200 text-blue-700 font-mono text-[10px] px-2.5 py-1 rounded-lg font-bold transition">Gab: ${code}</button>
+            </div>
+            <p class="text-xs text-slate-700 bg-amber-50/40 p-2.5 rounded-lg border border-amber-100/60 italic">"${ticket.issue_description}"</p>
+            ${act}
+          </div>`;
+      });
+    }
+
+    async function resolveTicket(id) {
+      const n = prompt("Solução aplicada? (Irá para o prontuário)"); if (n === null) return;
+      const t = helpdeskTickets.find(x => x.id === id); if(!t) return;
+      const techName = currentUser ? currentUser.username : 'Técnico';
+      
+      await supabaseClient.from('helpdesk_tickets').update({ status: 'Resolvido', resolved_at: new Date().toISOString(), resolution_notes: n||'Sem detalhes', technician: techName }).eq('id', id);
+      if(t.machine_id) await logMachineHistory(t.machine_id, 'Manutenção', `Helpdesk resolvido por ${techName}: "${t.issue_description}". Solução: ${n||'Sem detalhes'}`);
+      loadDataFromServer();
+    }
+
+    // --- DASHBOARD ESTATÍSTICO ---
     function renderStatistics() {
       document.getElementById('stat-card-total').innerText = machines.length;
       document.getElementById('stat-card-sectors').innerText = sectors.length;
 
-      // Status bars
       const statusCounts = { 'Operacional': 0, 'Manutenção': 0, 'Defeito': 0 };
       machines.forEach(m => { if(statusCounts[m.status] !== undefined) statusCounts[m.status]++; else statusCounts['Operacional']++; });
       
@@ -703,7 +834,6 @@
           </div>`;
       });
 
-      // OS bars
       const osCounts = {};
       machines.forEach(m => { const os = m.os || 'Desconhecido'; osCounts[os] = (osCounts[os] || 0) + 1; });
       const oContainer = document.getElementById('stats-os-bars'); oContainer.innerHTML = '';
