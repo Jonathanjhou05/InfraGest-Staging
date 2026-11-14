@@ -1170,81 +1170,56 @@
     function closeMachineModal(){stopScanner();document.getElementById('modal-machine').classList.add('hidden');}
     function editMachine(id){const m=machines.find(x=>x.id===id);if(m){document.getElementById('edit-machine-id').value=m.id;document.getElementById('machine-code').value=m.code;document.getElementById('machine-monitor').value=m.monitor;document.getElementById('machine-model').value=m.model;document.getElementById('machine-os').value=m.os;document.getElementById('machine-status').value=m.status;document.getElementById('machine-notes').value=m.notes;document.getElementById('machine-next-review').value=m.next_review||'';renderPeripheralsCheckboxes(m.peripherals||[]);document.getElementById('modal-machine').classList.remove('hidden');}}
 
-    async function saveMachine(e){
-      e.preventDefault();const id=document.getElementById('edit-machine-id').value,code=cleanOnlyNumbers(document.getElementById('machine-code').value);
-      if(code!=='NÃO SE APLICA'&&code.length!==12){alert("O gabinete deve ter 12 dígitos.");return;}
-      if(machines.find(m=>m.code===code&&m.id!==id&&code!=='NÃO SE APLICA')){alert("Gabinete já existe!");return;}
-      const mData={sector_id:currentSectorId,code:code,ticket:generateTicketFromCode(code),monitor:cleanOnlyNumbers(document.getElementById('machine-monitor').value),model:document.getElementById('machine-model').value,os:document.getElementById('machine-os').value,status:document.getElementById('machine-status').value,notes:document.getElementById('machine-notes').value,next_review:document.getElementById('machine-next-review').value,peripherals:Array.from(document.querySelectorAll('input[name="peripherals"]:checked')).map(x=>x.value),date:new Date().toLocaleString('pt-BR'),timestamp:Date.now()};
-      if(id){const o=machines.find(x=>x.id===id);await supabaseClient.from('machines').update(mData).eq('id',id);if(o.status!==mData.status)await logMachineHistory(id,'Estado',`De ${o.status} para ${mData.status}`);}
-      else{mData.id='mac_'+Date.now();await supabaseClient.from('machines').insert([mData]);await logMachineHistory(mData.id,'Criação','Cadastrada.');}
-      closeMachineModal();loadDataFromServer();
-    }
-    async function deleteMachine(id){
-      if(currentUser && currentUser.role !== 'admin') { alert("Acesso restrito a administradores."); return; }
-      if(confirm("Excluir máquina?")){await supabaseClient.from('machines').delete().eq('id',id);loadDataFromServer();}
+   async function saveMachine(e) {
+  e.preventDefault();
+  const id = document.getElementById('edit-machine-id').value;
+  const code = cleanOnlyNumbers(document.getElementById('machine-code').value);
+  
+  if (code !== 'NÃO SE APLICA' && code.length !== 12) {
+    alert("O gabinete deve ter 12 dígitos.");
+    return;
+  }
+  
+  if (machines.find(m => m.code === code && m.id !== id && code !== 'NÃO SE APLICA')) {
+    alert("Gabinete já existe!");
+    return;
+  }
+
+  const mData = {
+    sector_id: currentSectorId,
+    code: code,
+    ticket: generateTicketFromCode(code),
+    monitor: cleanOnlyNumbers(document.getElementById('machine-monitor').value),
+    model: document.getElementById('machine-model').value,
+    os: document.getElementById('machine-os').value,
+    status: document.getElementById('machine-status').value,
+    notes: document.getElementById('machine-notes').value,
+    next_review: document.getElementById('machine-next-review').value || '',
+    peripherals: Array.from(document.querySelectorAll('input[name="peripherals"]:checked')).map(x => x.value),
+    date: new Date().toLocaleString('pt-BR'),
+    timestamp: Date.now()
+  };
+
+  try {
+    if (id) {
+      const o = machines.find(x => x.id === id);
+      const { error } = await supabaseClient.from('machines').update(mData).eq('id', id);
+      if (error) throw error;
+      if (o.status !== mData.status) await logMachineHistory(id, 'Estado', `De ${o.status} para ${mData.status}`);
+    } else {
+      mData.id = 'mac_' + Date.now();
+      const { error } = await supabaseClient.from('machines').insert([mData]);
+      if (error) throw error;
+      await logMachineHistory(mData.id, 'Criação', 'Cadastrada.');
     }
     
-    function openMachineDetails(id){
-      const m=machines.find(x=>x.id===id);if(!m)return;activeMachineForHistory=m.id;
-      const s=sectors.find(x=>x.id===m.sector_id),f=s?floors.find(x=>x.id===s.floor_id):null;
-      document.getElementById('detail-ticket').innerText=m.ticket;document.getElementById('detail-sector').innerText=`${f?f.name:''} > ${s?s.name:''}`;document.getElementById('detail-code').innerText=m.code;document.getElementById('detail-monitor').innerText=m.monitor;document.getElementById('detail-model').innerText=m.model;document.getElementById('detail-status').innerText=m.status;
-      document.getElementById('detail-review').innerText=m.next_review ? new Date(m.next_review).toLocaleDateString('pt-BR') : 'Não agendada';
-      switchMachineTab('info');document.getElementById('modal-machine-details').classList.remove('hidden');
-    }
-    function closeMachineDetails(){document.getElementById('modal-machine-details').classList.add('hidden');activeMachineForHistory=null;}
-    function switchMachineTab(tab){
-      document.getElementById('printable-ticket').classList.toggle('hidden',tab!=='info');document.getElementById('machine-tab-history').classList.toggle('hidden',tab!=='history');document.getElementById('machine-tab-history').classList.toggle('flex',tab==='history');
-      document.getElementById('tab-btn-info').className=tab==='info'?"flex-1 py-3 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 bg-blue-50/30 dark:bg-blue-950/20":"flex-1 py-3 text-slate-400 border-b-2 border-transparent";
-      document.getElementById('tab-btn-history').className=tab==='history'?"flex-1 py-3 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 bg-blue-50/30 dark:bg-blue-950/20":"flex-1 py-3 text-slate-400 border-b-2 border-transparent";
-      if(tab==='history')fetchMachineHistory(activeMachineForHistory);
-    }
-    async function fetchMachineHistory(id){
-      const c=document.getElementById('machine-history-list');c.innerHTML='<p class="text-center py-4 text-slate-400">A carregar...</p>';
-      const {data}=await supabaseClient.from('machine_history').select('*').eq('machine_id',id).order('created_at',{ascending:false});
-      if(!data||!data.length){c.innerHTML='<p class="text-center py-4 text-slate-400">Sem histórico.</p>';return;}
-      c.innerHTML='';data.forEach(l=>c.innerHTML+=`<div class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 mb-2.5 shadow-sm"><div class="flex justify-between"><span class="font-bold text-slate-700 dark:text-slate-200">${l.action_type}</span><span class="text-[10px] text-slate-400">${new Date(l.created_at).toLocaleString('pt-BR')}</span></div><p class="text-xs mt-1 text-slate-600 dark:text-slate-300">${l.description}</p><div class="text-[10px] text-slate-400 mt-1">Por: ${l.user_name}</div></div>`);
-    }
-    async function logMachineHistory(id,action,desc){await supabaseClient.from('machine_history').insert([{machine_id:id,user_name:currentUser?currentUser.username:'Sistema',action_type:action,description:desc}]);}
-    async function addManualHistoryLog(e){e.preventDefault();const i=document.getElementById('manual-log-desc');if(i.value&&activeMachineForHistory){await logMachineHistory(activeMachineForHistory,'Nota',i.value);i.value='';fetchMachineHistory(activeMachineForHistory);}}
-
-    function openMoveMachineModal(id) {
-      interactiveFolderCallback = async (sec) => {
-        await supabaseClient.from('machines').update({ sector_id: sec.id }).eq('id', id);
-        await logMachineHistory(id, 'Mover', `Movido para ${sec.name}`);
-        loadDataFromServer();
-      };
-      document.getElementById('interactive-folder-search').value = '';
-      renderInteractiveFoldersList(sectors);
-      document.getElementById('modal-select-folder').classList.remove('hidden');
-    }
-    function filterInteractiveFolders(q) {
-      const query = q.toLowerCase();
-      const filtered = sectors.filter(s => {
-        const floor = floors.find(f => f.id === s.floor_id);
-        const floorName = floor ? floor.name.toLowerCase() : '';
-        return s.name.toLowerCase().includes(query) || floorName.includes(query);
-      });
-      renderInteractiveFoldersList(filtered);
-    }
-    function renderInteractiveFoldersList(list) {
-      const c = document.getElementById('interactive-folders-list'); c.innerHTML = ''; 
-      if(list.length === 0) { c.innerHTML = '<p class="text-slate-400 text-center text-sm py-6">Nenhum setor encontrado.</p>'; return; }
-      list.forEach(s => {
-        const floor = floors.find(f => f.id === s.floor_id);
-        const floorName = floor ? floor.name : 'Sem Andar';
-        const machineCount = machines.filter(m => m.sector_id === s.id).length;
-        c.innerHTML += `
-        <div class="flex items-center gap-3.5 p-3.5 border border-slate-200/80 dark:border-slate-800 rounded-2xl hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 transition cursor-pointer bg-white dark:bg-slate-900 shadow-sm mb-2.5" 
-             onclick="document.getElementById('modal-select-folder').classList.add('hidden'); interactiveFolderCallback({id:'${s.id}', name:'${s.name}'})">
-          <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-none shadow-inner"><i class="fa-solid fa-folder text-lg"></i></div>
-          <div class="flex-1 min-w-[120px]">
-            <h4 class="font-bold text-slate-800 dark:text-white text-sm leading-tight">${s.name}</h4>
-            <p class="text-[11px] text-slate-400 mt-0.5">Andar: <span class="font-bold text-indigo-900 dark:text-indigo-300">${floorName}</span></p>
-          </div>
-          <span class="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] px-2.5 py-1 rounded-xl border border-indigo-100 dark:border-indigo-900 flex-none">${machineCount} máq.</span>
-        </div>`;
-      });
-    }
+    closeMachineModal();
+    loadDataFromServer();
+  } catch (err) {
+    console.error("Erro ao salvar máquina:", err);
+    alert("❌ Erro ao salvar na base de dados. Verifique a consola.");
+  }
+}
 
     function openSyncOptionsModal() {
       document.getElementById('modal-sync-options').classList.remove('hidden');
