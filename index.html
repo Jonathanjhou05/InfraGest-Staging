@@ -1195,7 +1195,7 @@
 
         const result = await response.json();
         if(result.status === 'success') {
-          alert(`✅ Sincronização concluída!\n- Sincronizados: ${totalItems}\n- Duplicados detetados: ${duplicatesCount}`);
+          alert(`✅ Sincronização concluída com sucesso!\n\n- Quantidades Sincronizadas: ${totalItems}\n- Quantidade Duplicadas: ${duplicatesCount}`);
         }
       } catch (e) {
         clearInterval(interval);
