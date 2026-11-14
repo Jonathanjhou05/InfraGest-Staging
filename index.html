@@ -386,7 +386,6 @@
           <span class="bg-slate-700 text-[10px] font-bold px-2 py-1 rounded-xl">Completo</span>
         </button>
 
-        <!-- Botão para baixar relatório da última sincronização -->
         <button onclick="downloadLastSyncReportExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2">
           <i class="fa-solid fa-file-excel"></i> Baixar Relatório da Última Sincronização
         </button>
@@ -532,6 +531,13 @@
       <form onsubmit="saveFolder(event)" class="p-5 space-y-4 text-xs"><input type="hidden" id="folder-id">
         <div><label class="block font-semibold mb-1">Andar</label><select id="folder-floor-id" required class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-3 text-sm font-bold"></select></div>
         <div><label class="block font-semibold mb-1">Setor</label><input type="text" id="folder-name" required class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-3 text-sm"></div>
+        <div>
+          <label class="block font-semibold mb-1">Cor do Setor</label>
+          <div class="flex gap-2 items-center">
+            <input type="color" id="folder-color" value="#2563eb" class="w-10 h-10 rounded-xl cursor-pointer border-0">
+            <span class="text-[11px] text-slate-400">Personalize a cor visual da pasta</span>
+          </div>
+        </div>
         <div class="flex justify-end gap-2 pt-2"><button type="submit" class="px-5 py-2.5 font-bold text-white bg-blue-600 rounded-xl shadow-md">Salvar</button></div>
       </form>
     </div>
@@ -553,34 +559,58 @@
   <div id="modal-all-folders" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh] border border-slate-100 dark:border-slate-800">
       <div class="px-5 py-4 flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-950/30 rounded-t-3xl flex-none border-b border-indigo-100 dark:border-indigo-900/50">
-        <h3 class="font-bold text-indigo-900 dark:text-indigo-400 text-base flex items-center gap-2"><i class="fa-solid fa-list-ul text-indigo-600"></i> Todas as Pastas Cadastradas</h3>
-        <button onclick="document.getElementById('modal-all-folders').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <div class="p-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-3 flex-none">
-        <input type="text" id="modal-folder-search" oninput="filterModalFolders(this.value)" placeholder="Filtrar por nome do setor ou andar..." class="flex-1 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 shadow-sm">
-        <div class="flex gap-2">
-          <button onclick="exportAllFoldersZip()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-3 rounded-2xl text-sm shadow-md shadow-blue-500/20 flex items-center gap-1.5"><i class="fa-solid fa-file-zipper"></i> ZIP</button>
-          <button onclick="importFoldersModal()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-3 rounded-2xl text-sm shadow-md shadow-amber-500/20 flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-up"></i> Import</button>
+        <h3 class="font-bold text-indigo-900 dark:text-indigo-400 text-base flex items-center gap-2"><i class="fa-solid fa-list-ul text-indigo-600"></i> Gestor Avançado de Pastas</h3>
+        <div class="flex items-center gap-2">
+          <!-- Botões de Alternância de Layout -->
+          <div class="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex gap-1 border border-slate-200 dark:border-slate-700">
+            <button onclick="setFoldersLayout('grid')" id="layout-btn-grid" title="Visualização em Grelha (Cards)" class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm transition"><i class="fa-solid fa-grip"></i></button>
+            <button onclick="setFoldersLayout('list')" id="layout-btn-list" title="Visualização em Lista Compacta" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 transition"><i class="fa-solid fa-list"></i></button>
+          </div>
+          <button onclick="document.getElementById('modal-all-folders').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 ml-2"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
       </div>
+      
+      <!-- FILTROS AVANÇADOS E ORDENAÇÃO DE PASTAS -->
+      <div class="p-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-3 flex-none">
+        <input type="text" id="modal-folder-search" oninput="applyFolderFilters()" placeholder="Filtrar por nome do setor ou andar..." class="flex-1 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-2xl px-4 py-2.5 text-xs focus:outline-none focus:border-blue-500 shadow-sm">
+        
+        <div class="flex gap-2">
+          <select id="folder-filter-range" onchange="applyFolderFilters()" class="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none">
+            <option value="all">Todas as Pastas</option>
+            <option value="empty">Pastas Vazias (0)</option>
+            <option value="has_machines">Com Ativos (>0)</option>
+            <option value="gt_5">Mais de 5 Ativos</option>
+            <option value="gt_10">Mais de 10 Ativos</option>
+            <option value="critical">🔴 Com Manut./Defeito</option>
+          </select>
+
+          <select id="folder-sort-by" onchange="applyFolderFilters()" class="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 py-2 text-xs font-semibold text-blue-600 dark:text-blue-400 focus:outline-none">
+            <option value="alpha_asc">Nome (A-Z)</option>
+            <option value="alpha_desc">Nome (Z-A)</option>
+            <option value="machines_desc">Maior nº Ativos</option>
+            <option value="machines_asc">Menor nº Ativos</option>
+          </select>
+        </div>
+      </div>
+
       <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 flex flex-wrap items-center gap-3 flex-none text-sm border-b border-slate-200/80 dark:border-slate-800 shadow-inner">
         <label class="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300 cursor-pointer w-full sm:w-auto">
           <input type="checkbox" id="chk-all-folders" onchange="toggleAllFoldersSelection(this.checked)" class="w-4 h-4 text-blue-600 rounded border-slate-300">
           <span id="folders-selected-count">0 selecionada(s)</span>
         </label>
         <div class="flex-1 flex flex-wrap items-center gap-2 justify-start sm:justify-end">
-          <select id="bulk-move-target" class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 py-2 text-sm font-medium text-indigo-900 dark:text-indigo-300 focus:outline-none">
+          <select id="bulk-move-target" class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 py-2 text-xs font-medium text-indigo-900 dark:text-indigo-300 focus:outline-none">
             <option value="">Mover para...</option>
           </select>
-          <button onclick="moveSelectedFolders()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-xl shadow-md">Mover</button>
-          <button onclick="deleteSelectedFolders()" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> Excluir</button>
-          <button onclick="clearEmptyFolders()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5"><i class="fa-solid fa-broom"></i> Vazias</button>
+          <button onclick="moveSelectedFolders()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-2 rounded-xl text-xs shadow-md">Mover</button>
+          <button onclick="deleteSelectedFolders()" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-2 rounded-xl text-xs shadow-md flex items-center gap-1"><i class="fa-solid fa-trash-can"></i> Excluir</button>
+          <button onclick="clearEmptyFolders()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3 py-2 rounded-xl text-xs shadow-md flex items-center gap-1"><i class="fa-solid fa-broom"></i> Vazias</button>
         </div>
       </div>
       <div id="modal-all-folders-container" class="p-4 space-y-3 overflow-y-auto flex-1 bg-white dark:bg-slate-900"></div>
       <div class="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-between items-center rounded-b-3xl flex-none">
-        <button onclick="exportFoldersListExcel()" class="text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center gap-1.5"><i class="fa-solid fa-file-excel"></i> Exportar Lista (Excel)</button>
-        <button onclick="document.getElementById('modal-all-folders').classList.add('hidden')" class="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm">Fechar</button>
+        <button onclick="exportFoldersListExcel()" class="text-emerald-600 dark:text-emerald-400 font-bold text-xs flex items-center gap-1.5"><i class="fa-solid fa-file-excel"></i> Exportar Lista (Excel)</button>
+        <button onclick="document.getElementById('modal-all-folders').classList.add('hidden')" class="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm">Fechar</button>
       </div>
     </div>
   </div>
@@ -609,7 +639,8 @@
     let currentFloorId = null, currentSectorId = null, currentFilterStatus = 'Todos', currentMachineSort = 'ticket';
     let currentTicketFilter = 'Aberto', currentRmaFilter = 'Aguardando Envio';
     let html5QrcodeScanner = null, globalHtml5Scanner = null, activeScannerTarget = 'code', currentUser = null, interactiveFolderCallback = null, activeMachineForHistory = null;
-    let lastSyncPayload = []; // Guarda os dados da última sincronização para exportação em Excel
+    let lastSyncPayload = [];
+    let currentFoldersLayout = 'grid'; // 'grid' (Cards) ou 'list' (Lista Compacta)
 
     window.onload = async () => {
       loadCustomPeripheralsFromStorage(); loadCustomModelsFromStorage();
@@ -965,7 +996,8 @@
       if(secs.length===0) sc.innerHTML = '<div class="p-6 text-center text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">Sem setores.</div>';
       secs.forEach(sec => {
         const count = machines.filter(m => m.sector_id === sec.id).length;
-        sc.innerHTML += `<div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex justify-between items-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition" onclick="openSectorItems('${sec.id}')"><div class="flex items-center gap-3.5"><div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shadow-inner"><i class="fa-solid fa-folder text-lg"></i></div><div><h3 class="font-bold text-sm text-slate-800 dark:text-white">${sec.name}</h3><span class="text-xs text-slate-400">${count} máq.</span></div></div><div class="flex gap-2"><button onclick="event.stopPropagation(); editFolder('${sec.id}')" class="p-2.5 text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="event.stopPropagation(); deleteFolder('${sec.id}')" class="p-2.5 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></div></div>`;
+        const colorStyle = sec.color ? `border-left: 4px solid ${sec.color};` : '';
+        sc.innerHTML += `<div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex justify-between items-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition" style="${colorStyle}" onclick="openSectorItems('${sec.id}')"><div class="flex items-center gap-3.5"><div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shadow-inner" style="${sec.color?`color:${sec.color}`:''}"><i class="fa-solid fa-folder text-lg"></i></div><div><h3 class="font-bold text-sm text-slate-800 dark:text-white">${sec.name}</h3><span class="text-xs text-slate-400">${count} máq.</span></div></div><div class="flex gap-2"><button onclick="event.stopPropagation(); editFolder('${sec.id}')" class="p-2.5 text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="event.stopPropagation(); deleteFolder('${sec.id}')" class="p-2.5 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></div></div>`;
       });
     }
 
@@ -997,12 +1029,24 @@
       if(floors.length>1&&confirm("Eliminar Andar?")){await supabaseClient.from('floors').delete().eq('id',currentFloorId);currentFloorId=null;loadDataFromServer();}
     }
     
-    function openFolderModal(){const s=document.getElementById('folder-floor-id');s.innerHTML='';floors.forEach(f=>s.innerHTML+=`<option value="${f.id}" ${f.id===currentFloorId?'selected':''}>${f.name}</option>`);document.getElementById('folder-id').value='';document.getElementById('folder-name').value='';document.getElementById('modal-folder').classList.remove('hidden');}
-    async function saveFolder(e){e.preventDefault();const id=document.getElementById('folder-id').value,fid=document.getElementById('folder-floor-id').value,n=document.getElementById('folder-name').value;if(id)await supabaseClient.from('sectors').update({floor_id:fid,name:n}).eq('id',id);else await supabaseClient.from('sectors').insert([{id:'sec_'+Date.now(),floor_id:fid,name:n,color:'#2563eb'}]);document.getElementById('modal-folder').classList.add('hidden');currentFloorId=fid;loadDataFromServer();}
-    function editFolder(id){const s=sectors.find(x=>x.id===id);if(s){openFolderModal();document.getElementById('folder-id').value=s.id;document.getElementById('folder-name').value=s.name;}}
+    function openFolderModal(){const s=document.getElementById('folder-floor-id');s.innerHTML='';floors.forEach(f=>s.innerHTML+=`<option value="${f.id}" ${f.id===currentFloorId?'selected':''}>${f.name}</option>`);document.getElementById('folder-id').value='';document.getElementById('folder-name').value='';document.getElementById('folder-color').value='#2563eb';document.getElementById('modal-folder').classList.remove('hidden');}
+    async function saveFolder(e){e.preventDefault();const id=document.getElementById('folder-id').value,fid=document.getElementById('folder-floor-id').value,n=document.getElementById('folder-name').value,col=document.getElementById('folder-color').value;if(id)await supabaseClient.from('sectors').update({floor_id:fid,name:n,color:col}).eq('id',id);else await supabaseClient.from('sectors').insert([{id:'sec_'+Date.now(),floor_id:fid,name:n,color:col}]);document.getElementById('modal-folder').classList.add('hidden');currentFloorId=fid;loadDataFromServer();}
+    function editFolder(id){const s=sectors.find(x=>x.id===id);if(s){openFolderModal();document.getElementById('folder-id').value=s.id;document.getElementById('folder-name').value=s.name;document.getElementById('folder-color').value=s.color||'#2563eb';}}
     async function deleteFolder(id){
       if(currentUser && currentUser.role !== 'admin') { alert("Acesso restrito a administradores."); return; }
       if(confirm("Excluir Setor?")){await supabaseClient.from('sectors').delete().eq('id',id);loadDataFromServer();}
+    }
+
+    // CLONAR / DUPLICAR SETOR (NOVO)
+    async function cloneFolder(id) {
+      const s = sectors.find(x => x.id === id);
+      if(!s) return;
+      const newName = prompt("Nome para a nova pasta clonada:", s.name + " (Cópia)");
+      if(!newName) return;
+      const newSec = { id: 'sec_' + Date.now(), floor_id: s.floor_id, name: newName, color: s.color || '#2563eb' };
+      await supabaseClient.from('sectors').insert([newSec]);
+      alert("✅ Pasta clonada com sucesso!");
+      loadDataFromServer();
     }
 
     function filtrarPorEstado(s){currentFilterStatus=s;if(currentSectorId)renderMachines();else{if(sectors.length)openSectorItems(sectors[0].id);}}
@@ -1148,7 +1192,6 @@
 
       lastSyncPayload = payload;
 
-      // Cálculo de duplicados com base nos códigos de gabinete repetidos na lista
       const uniqueCodes = new Set();
       let duplicatesCount = 0;
       payload.forEach(item => {
@@ -1259,46 +1302,161 @@
       document.getElementById('modal-all-folders').classList.remove('hidden'); 
       document.getElementById('modal-folder-search').value = '';
       document.getElementById('chk-all-folders').checked = false;
+      document.getElementById('folder-filter-range').value = 'all';
+      document.getElementById('folder-sort-by').value = 'alpha_asc';
       updateFolderSelectionCount();
       populateBulkMoveDropdown();
-      renderAllFoldersList(sectors);
+      applyFolderFilters();
     }
-    function filterModalFolders(q) {
-      const query = q.toLowerCase();
-      const filtered = sectors.filter(s => {
+    
+    function setFoldersLayout(layout) {
+      currentFoldersLayout = layout;
+      const btnGrid = document.getElementById('layout-btn-grid');
+      const btnList = document.getElementById('layout-btn-list');
+      
+      if(layout === 'grid') {
+        btnGrid.className = "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm transition";
+        btnList.className = "px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 transition";
+      } else {
+        btnList.className = "px-2.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-sm transition";
+        btnGrid.className = "px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 transition";
+      }
+      applyFolderFilters();
+    }
+
+    function applyFolderFilters() {
+      const query = document.getElementById('modal-folder-search').value.toLowerCase();
+      const rangeFilter = document.getElementById('folder-filter-range').value;
+      const sortBy = document.getElementById('folder-sort-by').value;
+
+      let filtered = sectors.filter(s => {
         const floor = floors.find(f => f.id === s.floor_id);
         const floorName = floor ? floor.name.toLowerCase() : '';
-        return s.name.toLowerCase().includes(query) || floorName.includes(query);
+        const matchesQuery = s.name.toLowerCase().includes(query) || floorName.includes(query);
+        if(!matchesQuery) return false;
+
+        const secMachines = machines.filter(m => m.sector_id === s.id);
+        const count = secMachines.length;
+
+        if(rangeFilter === 'empty' && count !== 0) return false;
+        if(rangeFilter === 'has_machines' && count === 0) return false;
+        if(rangeFilter === 'gt_5' && count <= 5) return false;
+        if(rangeFilter === 'gt_10' && count <= 10) return false;
+        if(rangeFilter === 'critical') {
+          const hasCritical = secMachines.some(m => m.status === 'Manutenção' || m.status === 'Defeito');
+          if(!hasCritical) return false;
+        }
+        return true;
       });
+
+      // Ordenação
+      filtered.sort((a, b) => {
+        const countA = machines.filter(m => m.sector_id === a.id).length;
+        const countB = machines.filter(m => m.sector_id === b.id).length;
+        if(sortBy === 'alpha_asc') return a.name.localeCompare(b.name);
+        if(sortBy === 'alpha_desc') return b.name.localeCompare(a.name);
+        if(sortBy === 'machines_desc') return countB - countA;
+        if(sortBy === 'machines_asc') return countA - countB;
+        return 0;
+      });
+
       renderAllFoldersList(filtered);
     }
+    
     function renderAllFoldersList(list) {
       const c = document.getElementById('modal-all-folders-container'); c.innerHTML = ''; 
       if(list.length === 0) { c.innerHTML = '<p class="text-slate-400 text-center text-sm py-6">Nenhuma pasta encontrada.</p>'; return; }
-      list.forEach(s => {
-        const floor = floors.find(f => f.id === s.floor_id);
-        const floorName = floor ? floor.name : 'Desconhecido';
-        const machineCount = machines.filter(m => m.sector_id === s.id).length;
-        c.innerHTML += `
-        <div class="flex flex-wrap sm:flex-nowrap items-center gap-3.5 p-3.5 border border-slate-200/80 dark:border-slate-800 rounded-2xl hover:border-blue-300 transition bg-white dark:bg-slate-900 shadow-sm">
-          <input type="checkbox" class="folder-chk w-4 h-4 text-blue-600 rounded border-slate-300 cursor-pointer ml-1" value="${s.id}" onchange="updateFolderSelectionCount()">
-          <div class="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-none cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900 transition" onclick="goToSector('${s.floor_id}', '${s.id}')">
-            <i class="fa-solid fa-folder text-lg"></i>
-          </div>
-          <div class="flex-1 min-w-[120px] cursor-pointer" onclick="goToSector('${s.floor_id}', '${s.id}')">
-            <h4 class="font-bold text-slate-800 dark:text-white text-sm leading-tight">${s.name}</h4>
-            <p class="text-[11px] text-slate-400 mt-0.5">Andar: <span class="font-bold text-indigo-900 dark:text-indigo-300">${floorName}</span></p>
-          </div>
-          <div class="flex items-center gap-3 flex-none ml-auto sm:ml-0 mt-2 sm:mt-0">
-            <span class="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] px-3 py-1 rounded-xl border border-indigo-100 dark:border-indigo-900">${machineCount} máquina(s)</span>
-            <div class="flex gap-1.5">
-              <button onclick="editFolder('${s.id}')" class="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center hover:bg-blue-600 hover:text-white transition"><i class="fa-solid fa-pen text-[10px]"></i></button>
-              <button onclick="deleteFolder('${s.id}')" class="w-8 h-8 rounded-full bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400 flex items-center justify-center hover:bg-red-600 hover:text-white transition"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+      
+      if (currentFoldersLayout === 'grid') {
+        c.className = "p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-y-auto flex-1 bg-white dark:bg-slate-900";
+        list.forEach(s => {
+          const floor = floors.find(f => f.id === s.floor_id);
+          const floorName = floor ? floor.name : 'Desconhecido';
+          const secMachines = machines.filter(m => m.sector_id === s.id);
+          const machineCount = secMachines.length;
+          const hasCritical = secMachines.some(m => m.status === 'Manutenção' || m.status === 'Defeito');
+          const colorStyle = s.color ? `border-left: 4px solid ${s.color};` : '';
+
+          c.innerHTML += `
+          <div class="flex flex-col justify-between p-4 border border-slate-200/80 dark:border-slate-800 rounded-2xl hover:border-blue-400 transition bg-slate-50/50 dark:bg-slate-800/40 shadow-sm gap-3" style="${colorStyle}">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-3">
+                <input type="checkbox" class="folder-chk w-4 h-4 text-blue-600 rounded border-slate-300 cursor-pointer" value="${s.id}" onchange="updateFolderSelectionCount()">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center cursor-pointer hover:bg-blue-200 transition shadow-inner" style="${s.color?`color:${s.color}`:''}" onclick="goToSector('${s.floor_id}', '${s.id}')">
+                  <i class="fa-solid fa-folder"></i>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                ${hasCritical ? `<span class="bg-red-500 text-white font-bold text-[9px] px-2 py-0.5 rounded-full" title="Contém máquinas em Manutenção/Defeito">⚠️ Alerta</span>` : ''}
+                <span class="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-[10px] px-2.5 py-1 rounded-xl border border-indigo-100 dark:border-indigo-900">${machineCount} máq.</span>
+              </div>
             </div>
-          </div>
-        </div>`;
-      });
+            <div class="cursor-pointer" onclick="goToSector('${s.floor_id}', '${s.id}')">
+              <h4 class="font-bold text-slate-800 dark:text-white text-sm leading-tight truncate">${s.name}</h4>
+              <p class="text-[11px] text-slate-400 mt-0.5">Andar: <span class="font-bold text-indigo-900 dark:text-indigo-300">${floorName}</span></p>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-700 text-xs">
+              <button onclick="exportSingleSectorExcel('${s.id}')" class="text-emerald-600 font-bold hover:underline"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
+              <div class="flex gap-1.5">
+                <button onclick="cloneFolder('${s.id}')" title="Clonar Pasta" class="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 font-bold hover:bg-amber-600 hover:text-white transition"><i class="fa-solid fa-copy text-[10px]"></i></button>
+                <button onclick="editFolder('${s.id}')" class="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-600 hover:text-white transition"><i class="fa-solid fa-pen mr-1"></i> Editar</button>
+                <button onclick="deleteFolder('${s.id}')" class="px-2.5 py-1 rounded-xl bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400 font-bold hover:bg-red-600 hover:text-white transition"><i class="fa-solid fa-trash-can"></i></button>
+              </div>
+            </div>
+          </div>`;
+        });
+      } else {
+        c.className = "p-4 space-y-2.5 overflow-y-auto flex-1 bg-white dark:bg-slate-900";
+        list.forEach(s => {
+          const floor = floors.find(f => f.id === s.floor_id);
+          const floorName = floor ? floor.name : 'Desconhecido';
+          const secMachines = machines.filter(m => m.sector_id === s.id);
+          const machineCount = secMachines.length;
+          const hasCritical = secMachines.some(m => m.status === 'Manutenção' || m.status === 'Defeito');
+
+          c.innerHTML += `
+          <div class="flex items-center gap-3 p-3 border border-slate-200/80 dark:border-slate-800 rounded-2xl hover:border-blue-300 transition bg-white dark:bg-slate-900 shadow-sm">
+            <input type="checkbox" class="folder-chk w-4 h-4 text-blue-600 rounded border-slate-300 cursor-pointer ml-1" value="${s.id}" onchange="updateFolderSelectionCount()">
+            <div class="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-none cursor-pointer hover:bg-blue-200 transition" style="${s.color?`color:${s.color}`:''}" onclick="goToSector('${s.floor_id}', '${s.id}')">
+              <i class="fa-solid fa-folder text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-[120px] cursor-pointer" onclick="goToSector('${s.floor_id}', '${s.id}')">
+              <h4 class="font-bold text-slate-800 dark:text-white text-xs leading-tight">${s.name} <span class="font-normal text-slate-400">(${floorName})</span></h4>
+            </div>
+            <div class="flex items-center gap-3 flex-none ml-auto">
+              ${hasCritical ? `<span class="bg-red-500 text-white font-bold text-[9px] px-2 py-0.5 rounded-full">⚠️ Alerta</span>` : ''}
+              <span class="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-[10px] px-2.5 py-1 rounded-xl border border-indigo-100 dark:border-indigo-900">${machineCount} máq.</span>
+              <div class="flex gap-1">
+                <button onclick="exportSingleSectorExcel('${s.id}')" title="Exportar Excel" class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition"><i class="fa-solid fa-file-excel text-[10px]"></i></button>
+                <button onclick="cloneFolder('${s.id}')" title="Clonar" class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 flex items-center justify-center hover:bg-amber-600 hover:text-white transition"><i class="fa-solid fa-copy text-[10px]"></i></button>
+                <button onclick="editFolder('${s.id}')" class="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center hover:bg-blue-600 hover:text-white transition"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                <button onclick="deleteFolder('${s.id}')" class="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400 flex items-center justify-center hover:bg-red-600 hover:text-white transition"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+              </div>
+            </div>
+          </div>`;
+        });
+      }
     }
+
+    // EXPORTAR RELATÓRIO EXCEL APENAS DA PASTA ESCOLHIDA (NOVO)
+    function exportSingleSectorExcel(sectorId) {
+      const s = sectors.find(x => x.id === sectorId);
+      if(!s) return;
+      const floor = floors.find(x => x.id === s.floor_id);
+      const secMachines = machines.filter(m => m.sector_id === sectorId);
+
+      let csv = "\uFEFFAndar\tSetor\tTicket\tGabinete\tMonitor\tModelo\tSO\tEstado\tPeriféricos\tObs\n";
+      secMachines.forEach(m => {
+        csv += `${floor ? floor.name : ''}\t${s.name}\t${m.ticket}\t${m.code}\t${m.monitor}\t${m.model}\t${m.os}\t${m.status}\t${m.peripherals ? m.peripherals.join(',') : ''}\t${m.notes}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'tab-separated-values;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Setor_${s.name.replace(/\s+/g, '_')}_${Date.now()}.xls`;
+      link.click();
+    }
+
     function goToSector(floorId, sectorId) {
       document.getElementById('modal-all-folders').classList.add('hidden');
       currentFloorId = floorId;
@@ -1343,8 +1501,6 @@
         loadDataFromServer(); document.getElementById('modal-all-folders').classList.add('hidden');
       }
     }
-    function importFoldersModal() { alert("Para importar em massa, feche esta tela e clique em 'Importar' na tela de Inventário."); }
-    function exportAllFoldersZip() { alert("Recurso de exportação ZIP em construção para a nova base de dados."); }
     function exportFoldersListExcel() {
       let csv = "\uFEFFAndar\tPasta\tMáquinas\n";
       sectors.forEach(s => {
