@@ -88,14 +88,20 @@
     </div>
     
     <div class="flex items-center gap-2">
-      <!-- Barra de Progresso Fixa no Cabeçalho (Invisível por defeito) -->
-      <div id="sync-progress-box" class="hidden items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[10px]">
+      <!-- Barra de Progresso Fixa no Cabeçalho (Com Sincronizados e Duplicados) -->
+      <div id="sync-progress-box" class="hidden items-center gap-3 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[10px]">
         <div class="flex flex-col">
           <span id="sync-status-text" class="font-bold text-slate-700 dark:text-slate-200 leading-none">A sincronizar...</span>
-          <span id="sync-percentage" class="text-[9px] text-purple-600 dark:text-purple-400 font-extrabold mt-0.5">0%</span>
+          <div class="flex gap-2 mt-0.5 text-[9px] text-slate-500 dark:text-slate-400">
+            <span>Sync: <strong id="sync-count-success" class="text-purple-600 dark:text-purple-400">0</strong></span>
+            <span>Dup: <strong id="sync-count-duplicates" class="text-amber-500">0</strong></span>
+          </div>
         </div>
-        <div class="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
-          <div id="sync-progress-bar" class="bg-purple-600 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+        <div class="flex flex-col items-end gap-1">
+          <span id="sync-percentage" class="text-[9px] text-purple-600 dark:text-purple-400 font-extrabold">0%</span>
+          <div class="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+            <div id="sync-progress-bar" class="bg-purple-600 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+          </div>
         </div>
       </div>
 
@@ -1111,12 +1117,16 @@
       const progressBar = document.getElementById('sync-progress-bar');
       const percentageText = document.getElementById('sync-percentage');
       const statusText = document.getElementById('sync-status-text');
+      const countSuccess = document.getElementById('sync-count-success');
+      const countDuplicates = document.getElementById('sync-count-duplicates');
       
       progressBox.classList.remove('hidden');
       progressBox.style.display = 'flex';
       progressBar.style.width = '10%';
       percentageText.innerText = '10%';
       statusText.innerText = 'A preparar...';
+      countSuccess.innerText = '0';
+      countDuplicates.innerText = '0';
 
       const payload = machines.map(m => {
         const s = sectors.find(x => x.id === m.sector_id);
@@ -1136,14 +1146,31 @@
         };
       });
 
-      lastSyncPayload = payload; // Guarda o payload para exportação posterior
+      lastSyncPayload = payload;
+
+      // Cálculo de duplicados com base nos códigos de gabinete repetidos na lista
+      const uniqueCodes = new Set();
+      let duplicatesCount = 0;
+      payload.forEach(item => {
+        if (item.code && item.code !== 'NÃO SE APLICA') {
+          if (uniqueCodes.has(item.code)) duplicatesCount++;
+          else uniqueCodes.add(item.code);
+        }
+      });
 
       let progress = 20;
+      const totalItems = payload.length;
+      
       const interval = setInterval(() => {
         if(progress < 85) {
           progress += 15;
           progressBar.style.width = progress + '%';
           percentageText.innerText = progress + '%';
+          
+          let currentSynced = Math.floor((progress / 100) * totalItems);
+          countSuccess.innerText = currentSynced;
+          countDuplicates.innerText = duplicatesCount;
+
           if(progress > 50) statusText.innerText = 'A enviar...';
         }
       }, 150);
@@ -1158,15 +1185,17 @@
         progressBar.style.width = '100%';
         percentageText.innerText = '100%';
         statusText.innerText = 'Concluído!';
+        countSuccess.innerText = totalItems;
+        countDuplicates.innerText = duplicatesCount;
 
         setTimeout(() => {
           progressBox.classList.add('hidden');
           progressBox.style.display = 'none';
-        }, 2000);
+        }, 3000);
 
         const result = await response.json();
         if(result.status === 'success') {
-          alert("✅ Sincronização concluída com sucesso!");
+          alert(`✅ Sincronização concluída!\n- Sincronizados: ${totalItems}\n- Duplicados detetados: ${duplicatesCount}`);
         }
       } catch (e) {
         clearInterval(interval);
