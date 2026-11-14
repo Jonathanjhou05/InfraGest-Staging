@@ -88,7 +88,7 @@
     </div>
     
     <div class="flex items-center gap-2">
-      <!-- Barra de Progresso Fixa no Cabeçalho (Com Sincronizados e Duplicados) -->
+      <!-- Barra de Progresso Fixa no Cabeçalho -->
       <div id="sync-progress-box" class="hidden items-center gap-3 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[10px]">
         <div class="flex flex-col">
           <span id="sync-status-text" class="font-bold text-slate-700 dark:text-slate-200 leading-none">A sincronizar...</span>
@@ -211,7 +211,7 @@
       <div id="items-list" class="space-y-3"></div>
     </section>
 
-    <!-- VIEW 3: HELPDESK / CHAMADOS (AVANÇADO) -->
+    <!-- VIEW 3: HELPDESK / CHAMADOS -->
     <section id="view-tickets" class="hidden space-y-4">
       <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
         <div>
@@ -240,7 +240,7 @@
       <div id="tickets-list" class="space-y-3 pb-4"></div>
     </section>
 
-    <!-- VIEW 4: RMA (GARANTIAS E DEVOLUÇÕES) -->
+    <!-- VIEW 4: RMA -->
     <section id="view-rma" class="hidden space-y-4">
       <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
         <div>
@@ -259,7 +259,7 @@
       <div id="rma-list" class="space-y-3 pb-4"></div>
     </section>
 
-    <!-- VIEW 5: ESTATÍSTICAS / DASHBOARD ANALÍTICO -->
+    <!-- VIEW 5: ESTATÍSTICAS -->
     <section id="view-stats" class="hidden space-y-4 pb-6">
       <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
         <div>
@@ -525,6 +525,22 @@
     </div>
   </div>
 
+  <!-- MODAL: HISTÓRICO / AUDITORIA DE PASTA (NOVO) -->
+  <div id="modal-sector-history" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] border border-slate-100 dark:border-slate-800">
+      <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-950/30 flex-none">
+        <h3 class="font-bold text-indigo-900 dark:text-indigo-400 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left"></i> Histórico de Auditoria do Setor
+        </h3>
+        <button onclick="document.getElementById('modal-sector-history').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div id="sector-history-list" class="p-4 space-y-3 overflow-y-auto flex-1 text-xs bg-slate-50/50 dark:bg-slate-950/50"></div>
+      <div class="p-4 border-t border-slate-100 dark:border-slate-800 flex justify-end flex-none bg-white dark:bg-slate-900">
+        <button onclick="document.getElementById('modal-sector-history').classList.add('hidden')" class="px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- OUTROS MODAIS -->
   <div id="modal-folder" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-800"><div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center"><h3 class="font-bold text-sm">Nova Pasta</h3><button onclick="document.getElementById('modal-folder').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div>
@@ -640,7 +656,7 @@
     let currentTicketFilter = 'Aberto', currentRmaFilter = 'Aguardando Envio';
     let html5QrcodeScanner = null, globalHtml5Scanner = null, activeScannerTarget = 'code', currentUser = null, interactiveFolderCallback = null, activeMachineForHistory = null;
     let lastSyncPayload = [];
-    let currentFoldersLayout = 'grid'; // 'grid' (Cards) ou 'list' (Lista Compacta)
+    let currentFoldersLayout = 'grid';
 
     window.onload = async () => {
       loadCustomPeripheralsFromStorage(); loadCustomModelsFromStorage();
@@ -789,6 +805,52 @@
         } catch (error) { alert("Erro ao ler planilha. Verifique as colunas."); document.getElementById('app-title').innerText = "InfraGest"; }
       };
       reader.readAsArrayBuffer(file); event.target.value = '';
+    }
+
+    // AUDITORIA / HISTÓRICO DE PASTAS (NOVO)
+    async function logSectorHistory(sectorId, sectorName, actionType, description) {
+      if(!supabaseClient) return;
+      try {
+        await supabaseClient.from('sector_history').insert([{
+          id: 'sh_' + Date.now() + Math.floor(Math.random()*1000),
+          sector_id: sectorId,
+          sector_name: sectorName,
+          user_name: currentUser ? currentUser.username : 'Sistema',
+          action_type: actionType,
+          description: description,
+          created_at: new Date().toISOString()
+        }]);
+      } catch(e) { console.error("Erro ao gravar log do setor:", e); }
+    }
+
+    async function openSectorHistoryModal(sectorId) {
+      const s = sectors.find(x => x.id === sectorId);
+      if(!s) return;
+      const c = document.getElementById('sector-history-list');
+      c.innerHTML = '<p class="text-center py-4 text-slate-400">A carregar...</p>';
+      document.getElementById('modal-sector-history').classList.remove('hidden');
+
+      try {
+        const { data, error } = await supabaseClient.from('sector_history').select('*').eq('sector_id', sectorId).order('created_at', { ascending: false });
+        if(error || !data || data.length === 0) {
+          c.innerHTML = '<p class="text-center py-4 text-slate-400">Sem registos de auditoria para este setor.</p>';
+          return;
+        }
+        c.innerHTML = '';
+        data.forEach(log => {
+          c.innerHTML += `
+            <div class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-1">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-slate-700 dark:text-slate-200">${log.action_type}</span>
+                <span class="text-[10px] text-slate-400">${new Date(log.created_at).toLocaleString('pt-BR')}</span>
+              </div>
+              <p class="text-xs text-slate-600 dark:text-slate-300">${log.description}</p>
+              <div class="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold mt-1">Utilizador: ${log.user_name}</div>
+            </div>`;
+        });
+      } catch(err) {
+        c.innerHTML = '<p class="text-center py-4 text-red-500">Erro ao carregar histórico.</p>';
+      }
     }
 
     function renderRMA(status) {
@@ -1030,21 +1092,42 @@
     }
     
     function openFolderModal(){const s=document.getElementById('folder-floor-id');s.innerHTML='';floors.forEach(f=>s.innerHTML+=`<option value="${f.id}" ${f.id===currentFloorId?'selected':''}>${f.name}</option>`);document.getElementById('folder-id').value='';document.getElementById('folder-name').value='';document.getElementById('folder-color').value='#2563eb';document.getElementById('modal-folder').classList.remove('hidden');}
-    async function saveFolder(e){e.preventDefault();const id=document.getElementById('folder-id').value,fid=document.getElementById('folder-floor-id').value,n=document.getElementById('folder-name').value,col=document.getElementById('folder-color').value;if(id)await supabaseClient.from('sectors').update({floor_id:fid,name:n,color:col}).eq('id',id);else await supabaseClient.from('sectors').insert([{id:'sec_'+Date.now(),floor_id:fid,name:n,color:col}]);document.getElementById('modal-folder').classList.add('hidden');currentFloorId=fid;loadDataFromServer();}
-    function editFolder(id){const s=sectors.find(x=>x.id===id);if(s){openFolderModal();document.getElementById('folder-id').value=s.id;document.getElementById('folder-name').value=s.name;document.getElementById('folder-color').value=s.color||'#2563eb';}}
-    async function deleteFolder(id){
-      if(currentUser && currentUser.role !== 'admin') { alert("Acesso restrito a administradores."); return; }
-      if(confirm("Excluir Setor?")){await supabaseClient.from('sectors').delete().eq('id',id);loadDataFromServer();}
+    
+    async function saveFolder(e){
+      e.preventDefault();
+      const id=document.getElementById('folder-id').value,fid=document.getElementById('folder-floor-id').value,n=document.getElementById('folder-name').value,col=document.getElementById('folder-color').value;
+      if(id) {
+        await supabaseClient.from('sectors').update({floor_id:fid,name:n,color:col}).eq('id',id);
+        await logSectorHistory(id, n, 'Edição', `Pasta renomeada para "${n}" e cor atualizada.`);
+      } else {
+        const newId = 'sec_'+Date.now();
+        await supabaseClient.from('sectors').insert([{id:newId, floor_id:fid, name:n, color:col}]);
+        await logSectorHistory(newId, n, 'Criação', `Pasta "${n}" criada com sucesso.`);
+      }
+      document.getElementById('modal-folder').classList.add('hidden');currentFloorId=fid;loadDataFromServer();
     }
 
-    // CLONAR / DUPLICAR SETOR (NOVO)
+    function editFolder(id){const s=sectors.find(x=>x.id===id);if(s){openFolderModal();document.getElementById('folder-id').value=s.id;document.getElementById('folder-name').value=s.name;document.getElementById('folder-color').value=s.color||'#2563eb';}}
+    
+    async function deleteFolder(id){
+      if(currentUser && currentUser.role !== 'admin') { alert("Acesso restrito a administradores."); return; }
+      const s = sectors.find(x => x.id === id);
+      if(confirm("Excluir Setor?")){
+        await logSectorHistory(id, s ? s.name : 'Desconhecido', 'Exclusão', 'Pasta excluída do sistema.');
+        await supabaseClient.from('sectors').delete().eq('id',id);
+        loadDataFromServer();
+      }
+    }
+
     async function cloneFolder(id) {
       const s = sectors.find(x => x.id === id);
       if(!s) return;
       const newName = prompt("Nome para a nova pasta clonada:", s.name + " (Cópia)");
       if(!newName) return;
-      const newSec = { id: 'sec_' + Date.now(), floor_id: s.floor_id, name: newName, color: s.color || '#2563eb' };
+      const newId = 'sec_' + Date.now();
+      const newSec = { id: newId, floor_id: s.floor_id, name: newName, color: s.color || '#2563eb' };
       await supabaseClient.from('sectors').insert([newSec]);
+      await logSectorHistory(newId, newName, 'Clonagem', `Pasta clonada a partir de "${s.name}".`);
       alert("✅ Pasta clonada com sucesso!");
       loadDataFromServer();
     }
@@ -1349,7 +1432,6 @@
         return true;
       });
 
-      // Ordenação
       filtered.sort((a, b) => {
         const countA = machines.filter(m => m.sector_id === a.id).length;
         const countB = machines.filter(m => m.sector_id === b.id).length;
@@ -1398,6 +1480,7 @@
             <div class="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-700 text-xs">
               <button onclick="exportSingleSectorExcel('${s.id}')" class="text-emerald-600 font-bold hover:underline"><i class="fa-solid fa-file-excel mr-1"></i> Excel</button>
               <div class="flex gap-1.5">
+                <button onclick="openSectorHistoryModal('${s.id}')" title="Histórico de Auditoria" class="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 font-bold hover:bg-indigo-600 hover:text-white transition"><i class="fa-solid fa-clock-rotate-left text-[10px]"></i></button>
                 <button onclick="cloneFolder('${s.id}')" title="Clonar Pasta" class="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 font-bold hover:bg-amber-600 hover:text-white transition"><i class="fa-solid fa-copy text-[10px]"></i></button>
                 <button onclick="editFolder('${s.id}')" class="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-600 hover:text-white transition"><i class="fa-solid fa-pen mr-1"></i> Editar</button>
                 <button onclick="deleteFolder('${s.id}')" class="px-2.5 py-1 rounded-xl bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400 font-bold hover:bg-red-600 hover:text-white transition"><i class="fa-solid fa-trash-can"></i></button>
@@ -1428,6 +1511,7 @@
               <span class="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-[10px] px-2.5 py-1 rounded-xl border border-indigo-100 dark:border-indigo-900">${machineCount} máq.</span>
               <div class="flex gap-1">
                 <button onclick="exportSingleSectorExcel('${s.id}')" title="Exportar Excel" class="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-600 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition"><i class="fa-solid fa-file-excel text-[10px]"></i></button>
+                <button onclick="openSectorHistoryModal('${s.id}')" title="Histórico" class="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition"><i class="fa-solid fa-clock-rotate-left text-[10px]"></i></button>
                 <button onclick="cloneFolder('${s.id}')" title="Clonar" class="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-600 flex items-center justify-center hover:bg-amber-600 hover:text-white transition"><i class="fa-solid fa-copy text-[10px]"></i></button>
                 <button onclick="editFolder('${s.id}')" class="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center hover:bg-blue-600 hover:text-white transition"><i class="fa-solid fa-pen text-[10px]"></i></button>
                 <button onclick="deleteFolder('${s.id}')" class="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400 flex items-center justify-center hover:bg-red-600 hover:text-white transition"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
@@ -1438,7 +1522,6 @@
       }
     }
 
-    // EXPORTAR RELATÓRIO EXCEL APENAS DA PASTA ESCOLHIDA (NOVO)
     function exportSingleSectorExcel(sectorId) {
       const s = sectors.find(x => x.id === sectorId);
       if(!s) return;
@@ -1480,7 +1563,11 @@
       const targetFloor = document.getElementById('bulk-move-target').value;
       if (selected.length === 0) return alert("Selecione pelo menos uma pasta.");
       if (!targetFloor) return alert("Selecione um andar de destino.");
-      for (const id of selected) await supabaseClient.from('sectors').update({ floor_id: targetFloor }).eq('id', id);
+      for (const id of selected) {
+        await supabaseClient.from('sectors').update({ floor_id: targetFloor }).eq('id', id);
+        const s = sectors.find(x => x.id === id);
+        await logSectorHistory(id, s ? s.name : '', 'Movimentação', `Pasta movida para o novo andar.`);
+      }
       loadDataFromServer(); document.getElementById('modal-all-folders').classList.add('hidden');
     }
     async function deleteSelectedFolders() {
@@ -1488,7 +1575,11 @@
       const selected = Array.from(document.querySelectorAll('.folder-chk:checked')).map(chk => chk.value);
       if (selected.length === 0) return alert("Selecione pelo menos uma pasta.");
       if (confirm(`Tem a certeza que deseja excluir ${selected.length} pasta(s)?`)) {
-        for (const id of selected) await supabaseClient.from('sectors').delete().eq('id', id);
+        for (const id of selected) {
+          const s = sectors.find(x => x.id === id);
+          await logSectorHistory(id, s ? s.name : '', 'Exclusão', `Pasta excluída em lote.`);
+          await supabaseClient.from('sectors').delete().eq('id', id);
+        }
         loadDataFromServer(); document.getElementById('modal-all-folders').classList.add('hidden');
       }
     }
@@ -1497,7 +1588,10 @@
       const emptySectors = sectors.filter(s => machines.filter(m => m.sector_id === s.id).length === 0);
       if (emptySectors.length === 0) return alert("Não existem pastas vazias.");
       if (confirm(`Existem ${emptySectors.length} pastas vazias. Deseja excluí-las?`)) {
-        for (const s of emptySectors) await supabaseClient.from('sectors').delete().eq('id', s.id);
+        for (const s of emptySectors) {
+          await logSectorHistory(s.id, s.name, 'Limpeza', `Pasta vazia excluída automaticamente.`);
+          await supabaseClient.from('sectors').delete().eq('id', s.id);
+        }
         loadDataFromServer(); document.getElementById('modal-all-folders').classList.add('hidden');
       }
     }
