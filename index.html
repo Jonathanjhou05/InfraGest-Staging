@@ -1086,7 +1086,7 @@
       document.getElementById('modal-sync-options').classList.remove('hidden');
     }
 
-    async function executeSync(mode) {
+   async function executeSync(mode) {
       document.getElementById('modal-sync-options').classList.add('hidden');
       
       const progressBox = document.getElementById('sync-progress-box');
@@ -1116,6 +1116,43 @@
           date: m.date || ''
         };
       });
+
+      let progress = 20;
+      const interval = setInterval(() => {
+        if(progress < 85) {
+          progress += 15;
+          progressBar.style.width = progress + '%';
+          percentageText.innerText = progress + '%';
+          if(progress > 50) statusText.innerText = 'A enviar p/ Sheets...';
+        }
+      }, 150);
+
+      try {
+        const response = await fetch(GOOGLE_SHEETS_WEBHOOK_URLS[0], {
+          method: 'POST',
+          body: JSON.stringify({ mode: mode, data: payload })
+        });
+        
+        clearInterval(interval);
+        progressBar.style.width = '100%';
+        percentageText.innerText = '100%';
+        statusText.innerText = 'Concluído!';
+
+        setTimeout(() => {
+          progressBox.classList.add('hidden');
+        }, 2000);
+
+        const result = await response.json();
+        if(result.status === 'success') {
+          alert("✅ Sincronização concluída com sucesso!");
+        }
+      } catch (e) {
+        clearInterval(interval);
+        progressBox.classList.add('hidden');
+        console.error("Erro no Sync:", e);
+        alert("❌ Erro ao comunicar com o Google Sheets.");
+      }
+    }
 
       let progress = 20;
       const interval = setInterval(() => {
