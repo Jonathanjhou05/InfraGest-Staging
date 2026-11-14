@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-PT" class="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -17,6 +17,12 @@
 
   <!-- Tailwind CSS & FontAwesome -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
+    }
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Bibliotecas Externas -->
@@ -33,12 +39,11 @@
       #printable-ticket { position: absolute; left: 0; top: 0; width: 100%; }
     }
     .history-scroll::-webkit-scrollbar { width: 4px; }
-    .history-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
-    .history-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-    .history-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .history-scroll::-webkit-scrollbar-track { background: transparent; }
+    .history-scroll::-webkit-scrollbar-thumb { background: rgba(150,150,150,0.3); border-radius: 4px; }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 flex flex-col h-screen overflow-hidden font-sans">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col h-screen overflow-hidden font-sans transition-colors duration-200">
 
   <!-- INDICADOR OFFLINE -->
   <div id="offline-banner" class="hidden bg-amber-500 text-white text-[11px] font-semibold text-center py-1 px-2 flex items-center justify-center gap-1.5 flex-none z-30 shadow-inner">
@@ -46,61 +51,66 @@
   </div>
 
   <!-- LOGIN VIEW -->
-  <div id="view-login" class="fixed inset-0 bg-blue-600 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden p-6 space-y-6">
+  <div id="view-login" class="fixed inset-0 bg-blue-600 dark:bg-slate-900 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden p-8 space-y-6 border border-slate-100 dark:border-slate-800">
       <div class="text-center space-y-2">
-        <div class="w-16 h-16 bg-blue-50 rounded-2xl mx-auto flex items-center justify-center shadow-inner border border-blue-100 text-blue-600 text-2xl font-bold">IG</div>
-        <h2 class="font-bold text-slate-800 text-lg">InfraGest</h2>
-        <p class="text-xs text-slate-500">Entre com as suas credenciais</p>
+        <div class="w-16 h-16 bg-blue-50 dark:bg-blue-950/50 rounded-2xl mx-auto flex items-center justify-center shadow-inner border border-blue-100 dark:border-blue-900 text-blue-600 dark:text-blue-400 text-2xl font-bold">IG</div>
+        <h2 class="font-bold text-slate-800 dark:text-white text-lg">InfraGest</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400">Entre com as suas credenciais</p>
       </div>
 
       <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Utilizador</label>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Utilizador</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user"></i></span>
-            <input type="text" id="login-username" required placeholder="Ex: admin" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" id="login-username" required placeholder="Ex: admin" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Senha</label>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Senha</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock"></i></span>
-            <input type="password" id="login-password" required placeholder="A sua senha" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="password" id="login-password" required placeholder="A sua senha" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-9 pr-4 py-2.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
           </div>
         </div>
-        <div id="login-error" class="hidden text-red-500 text-xs text-center font-medium bg-red-50 p-2 rounded-lg border border-red-100">Credenciais incorretas.</div>
-        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-xl shadow-md transition">Entrar no Sistema</button>
+        <div id="login-error" class="hidden text-red-500 text-xs text-center font-medium bg-red-50 dark:bg-red-950/50 p-2 rounded-lg border border-red-100 dark:border-red-900">Credenciais incorretas.</div>
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-xl shadow-lg shadow-blue-500/20 transition">Entrar no Sistema</button>
       </form>
     </div>
   </div>
 
   <!-- HEADER -->
-  <header class="bg-blue-600 text-white shadow-md flex-none px-4 py-3 flex items-center justify-between z-10">
+  <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 shadow-sm flex-none px-4 py-3 flex items-center justify-between z-10 transition-colors duration-200">
     <div class="flex items-center gap-3">
-      <button id="btn-back" onclick="goBack()" class="hidden text-white hover:text-blue-100 text-lg"><i class="fa-solid fa-arrow-left"></i></button>
-      <h1 id="app-title" class="font-bold text-lg leading-tight truncate">InfraGest</h1>
+      <button id="btn-back" onclick="goBack()" class="hidden text-slate-600 dark:text-slate-300 hover:text-blue-600 text-lg"><i class="fa-solid fa-arrow-left"></i></button>
+      <h1 id="app-title" class="font-bold text-base leading-tight truncate">InfraGest</h1>
     </div>
     <div class="flex items-center gap-2">
+      <!-- Botão Dark Mode Toggle -->
+      <button onclick="toggleDarkMode()" title="Alternar Tema" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs p-2.5 rounded-xl transition">
+        <i id="dark-mode-icon" class="fa-solid fa-moon"></i>
+      </button>
+
       <!-- Botão Sync e Barra de Progresso Integrada -->
       <div class="relative flex flex-col items-end">
-        <button onclick="openSyncOptionsModal()" title="Sync Sheets" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1.5 shadow" id="btn-sync-sheets">
+        <button onclick="openSyncOptionsModal()" title="Sync Sheets" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-1.5 shadow-lg shadow-purple-500/20 transition" id="btn-sync-sheets">
           <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">Sync</span>
         </button>
         
         <!-- Barra de Progresso Flutuante com Porcentagem -->
-        <div id="sync-progress-box" class="hidden absolute top-full right-0 mt-1.5 w-44 bg-white p-2.5 rounded-xl shadow-xl border border-slate-200 z-30 text-[10px] space-y-1.5">
-          <div class="flex justify-between font-bold text-slate-700">
+        <div id="sync-progress-box" class="hidden absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-30 text-[10px] space-y-2">
+          <div class="flex justify-between font-bold text-slate-700 dark:text-slate-200">
             <span id="sync-status-text">A sincronizar...</span>
             <span id="sync-percentage">0%</span>
           </div>
-          <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-            <div id="sync-progress-bar" class="bg-purple-600 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+          <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div id="sync-progress-bar" class="bg-purple-600 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
           </div>
         </div>
       </div>
 
-      <button onclick="openExportModal()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold px-2.5 py-2 rounded-lg flex items-center gap-1.5 shadow"><i class="fa-solid fa-file-excel"></i> <span class="hidden sm:inline">Exportar</span></button>
+      <button onclick="openExportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition"><i class="fa-solid fa-file-excel"></i> <span class="hidden sm:inline">Exportar</span></button>
     </div>
   </header>
 
@@ -110,59 +120,59 @@
     <!-- VIEW 1: INVENTÁRIO (ANDARES E SETORES) -->
     <section id="view-sectors" class="space-y-4">
       <div class="grid grid-cols-4 gap-2 text-center">
-        <div onclick="filtrarPorEstado('Todos')" class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:bg-slate-50">
-          <span class="block text-[10px] text-slate-400 font-semibold uppercase">Total</span><span id="stat-total" class="font-bold text-blue-700 text-sm">0</span>
+        <div onclick="filtrarPorEstado('Todos')" class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm cursor-pointer hover:border-blue-500 transition">
+          <span class="block text-[10px] text-slate-400 font-semibold uppercase">Total</span><span id="stat-total" class="font-bold text-blue-600 dark:text-blue-400 text-sm">0</span>
         </div>
-        <div onclick="filtrarPorEstado('Ativos')" class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:bg-emerald-50">
-          <span class="block text-[10px] text-emerald-500 font-semibold uppercase">Ativos</span><span id="stat-operacional" class="font-bold text-emerald-600 text-sm">0</span>
+        <div onclick="filtrarPorEstado('Ativos')" class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm cursor-pointer hover:border-emerald-500 transition">
+          <span class="block text-[10px] text-emerald-500 font-semibold uppercase">Ativos</span><span id="stat-operacional" class="font-bold text-emerald-600 dark:text-emerald-400 text-sm">0</span>
         </div>
-        <div onclick="filtrarPorEstado('Manutenção')" class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:bg-amber-50">
-          <span class="block text-[10px] text-amber-500 font-semibold uppercase">Manut.</span><span id="stat-manutencao" class="font-bold text-amber-600 text-sm">0</span>
+        <div onclick="filtrarPorEstado('Manutenção')" class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm cursor-pointer hover:border-amber-500 transition">
+          <span class="block text-[10px] text-amber-500 font-semibold uppercase">Manut.</span><span id="stat-manutencao" class="font-bold text-amber-600 dark:text-amber-400 text-sm">0</span>
         </div>
-        <div onclick="filtrarPorEstado('Defeito')" class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm cursor-pointer hover:bg-red-50">
-          <span class="block text-[10px] text-red-500 font-semibold uppercase">Defeito</span><span id="stat-defeito" class="font-bold text-red-600 text-sm">0</span>
+        <div onclick="filtrarPorEstado('Defeito')" class="bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm cursor-pointer hover:border-red-500 transition">
+          <span class="block text-[10px] text-red-500 font-semibold uppercase">Defeito</span><span id="stat-defeito" class="font-bold text-red-600 dark:text-red-400 text-sm">0</span>
         </div>
       </div>
 
       <!-- Barra de Pesquisa Global com Leitor de Câmara Integrado -->
       <div class="flex gap-2">
         <div class="relative flex-1">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
-          <input type="text" id="global-search" oninput="handleGlobalSearch(this.value)" placeholder="Pesquisar por património ou modelo..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-10 py-2.5 text-xs shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <button onclick="startGlobalScanner()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-blue-600" title="Ler com câmara"><i class="fa-solid fa-barcode text-sm"></i></button>
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <input type="text" id="global-search" oninput="handleGlobalSearch(this.value)" placeholder="Pesquisar por património ou modelo..." class="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-10 pr-10 py-3 text-xs shadow-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <button onclick="startGlobalScanner()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-blue-600" title="Ler com câmara"><i class="fa-solid fa-barcode text-sm"></i></button>
         </div>
-        <button onclick="loadDataFromServer()" class="bg-blue-600 text-white px-3.5 py-2.5 rounded-xl shadow-sm"><i class="fa-solid fa-rotate"></i></button>
+        <button onclick="loadDataFromServer()" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 px-4 py-3 rounded-2xl shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition"><i class="fa-solid fa-rotate"></i></button>
       </div>
 
       <!-- Leitor QR/Barcode Global Overlay -->
-      <div id="global-scanner-container" class="hidden border-2 border-dashed border-blue-500 p-3 rounded-2xl bg-white shadow-md space-y-2">
+      <div id="global-scanner-container" class="hidden border-2 border-dashed border-blue-500 p-4 rounded-3xl bg-white dark:bg-slate-900 shadow-xl space-y-3">
         <div id="global-reader" class="w-full"></div>
-        <button type="button" onclick="stopGlobalScanner()" class="w-full bg-red-100 text-red-600 text-xs font-bold py-2 rounded-xl">Fechar Leitor</button>
+        <button type="button" onclick="stopGlobalScanner()" class="w-full bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 text-xs font-bold py-2.5 rounded-xl border border-red-100 dark:border-red-900">Fechar Leitor</button>
       </div>
 
-      <div class="space-y-2">
-        <div class="flex justify-between items-center">
-          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Andares</span>
+      <div class="space-y-2.5">
+        <div class="flex justify-between items-center px-1">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Andares</span>
           <div class="flex gap-2">
-            <button onclick="openAllFoldersModal()" class="bg-indigo-50 text-indigo-700 text-[11px] font-bold px-2 py-1.5 rounded-md border border-indigo-200 shadow-sm">Todas</button>
-            <button onclick="openFolderModal()" class="bg-blue-600 text-white text-[11px] font-bold px-2 py-1.5 rounded-md shadow-sm">+ Setor</button>
+            <button onclick="openAllFoldersModal()" class="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 text-[11px] font-bold px-3 py-1.5 rounded-xl border border-indigo-100 dark:border-indigo-900 shadow-sm">Todas</button>
+            <button onclick="openFolderModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-md shadow-blue-500/20">+ Setor</button>
           </div>
         </div>
-        <div id="floors-tabs-container" class="flex items-center gap-1.5 overflow-x-auto pb-2 text-xs"></div>
+        <div id="floors-tabs-container" class="flex items-center gap-2 overflow-x-auto pb-2 text-xs"></div>
       </div>
 
-      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
         <div>
-          <h3 id="current-floor-title" class="font-bold text-sm text-indigo-900">Andar</h3>
-          <p id="current-floor-subtitle" class="text-[11px] text-slate-500">Selecione um andar</p>
+          <h3 id="current-floor-title" class="font-bold text-sm text-indigo-900 dark:text-indigo-400">Andar</h3>
+          <p id="current-floor-subtitle" class="text-[11px] text-slate-400">Selecione um andar</p>
         </div>
         <div class="flex items-center gap-2">
-          <label class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow cursor-pointer">
+          <label class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md shadow-amber-500/20 cursor-pointer transition">
             <i class="fa-solid fa-file-arrow-up"></i> Importar
             <input type="file" id="import-excel-file" accept=".xlsx, .xls, .csv" onchange="handleExcelImport(event)" class="hidden">
           </label>
-          <button onclick="editCurrentFloor()" id="btn-edit-floor" class="hidden text-xs text-slate-500 px-2"><i class="fa-solid fa-pen"></i></button>
-          <button onclick="deleteCurrentFloor()" id="btn-delete-floor" class="hidden text-xs text-slate-400 hover:text-red-600 px-2"><i class="fa-solid fa-trash-can"></i></button>
+          <button onclick="editCurrentFloor()" id="btn-edit-floor" class="hidden text-xs text-slate-400 hover:text-blue-600 p-2"><i class="fa-solid fa-pen"></i></button>
+          <button onclick="deleteCurrentFloor()" id="btn-delete-floor" class="hidden text-xs text-slate-400 hover:text-red-600 p-2"><i class="fa-solid fa-trash-can"></i></button>
         </div>
       </div>
 
@@ -171,22 +181,22 @@
 
     <!-- VIEW 2: MÁQUINAS NO SETOR -->
     <section id="view-items" class="hidden space-y-4">
-      <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
         <div>
-          <h2 id="current-sector-title" class="font-bold text-base text-slate-800">Setor</h2>
-          <p id="current-sector-count" class="text-xs text-slate-500">0 máquinas registadas</p>
+          <h2 id="current-sector-title" class="font-bold text-base text-slate-800 dark:text-white">Setor</h2>
+          <p id="current-sector-count" class="text-xs text-slate-400">0 máquinas registadas</p>
         </div>
-        <button onclick="openMachineModal()" class="bg-blue-600 text-white text-xs font-bold px-3 py-2 rounded-lg shadow"><i class="fa-solid fa-plus mr-1"></i> Cadastrar</button>
+        <button onclick="openMachineModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-md shadow-blue-500/20"><i class="fa-solid fa-plus mr-1"></i> Cadastrar</button>
       </div>
       
       <div class="flex flex-col sm:flex-row items-stretch justify-between gap-2">
         <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs">
-          <button onclick="filterMachinesByStatus('Todos')" id="filter-btn-Todos" class="px-3 py-1.5 rounded-lg font-semibold bg-blue-600 text-white shadow-sm">Todos</button>
-          <button onclick="filterMachinesByStatus('Ativos')" id="filter-btn-Ativos" class="px-3 py-1.5 rounded-lg font-semibold bg-white border border-slate-200 text-slate-600">Ativos</button>
-          <button onclick="filterMachinesByStatus('Manutenção')" id="filter-btn-Manutenção" class="px-3 py-1.5 rounded-lg font-semibold bg-white border border-slate-200 text-slate-600">Manutenção</button>
-          <button onclick="filterMachinesByStatus('Defeito')" id="filter-btn-Defeito" class="px-3 py-1.5 rounded-lg font-semibold bg-white border border-slate-200 text-slate-600">Defeito</button>
+          <button onclick="filterMachinesByStatus('Todos')" id="filter-btn-Todos" class="px-3 py-2 rounded-xl font-semibold bg-blue-600 text-white shadow-md shadow-blue-500/20">Todos</button>
+          <button onclick="filterMachinesByStatus('Ativos')" id="filter-btn-Ativos" class="px-3 py-2 rounded-xl font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">Ativos</button>
+          <button onclick="filterMachinesByStatus('Manutenção')" id="filter-btn-Manutenção" class="px-3 py-2 rounded-xl font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">Manutenção</button>
+          <button onclick="filterMachinesByStatus('Defeito')" id="filter-btn-Defeito" class="px-3 py-2 rounded-xl font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">Defeito</button>
         </div>
-        <select id="machine-sort-select" onchange="handleMachineSortChange(this.value)" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-bold text-blue-700 shadow-sm focus:outline-none">
+        <select id="machine-sort-select" onchange="handleMachineSortChange(this.value)" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-blue-600 dark:text-blue-400 shadow-sm focus:outline-none">
           <option value="ticket">Ordem Ticket</option>
           <option value="alphabetical">Alfabética</option>
           <option value="recent">Mais Recentes</option>
@@ -198,23 +208,23 @@
 
     <!-- VIEW 3: HELPDESK / CHAMADOS (AVANÇADO) -->
     <section id="view-tickets" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
         <div>
-          <h2 class="font-bold text-base text-slate-800"><i class="fa-solid fa-headset text-indigo-600 mr-1.5"></i> Fila de Atendimento</h2>
-          <p class="text-xs text-slate-500">Gestão avançada de incidentes e chamados</p>
+          <h2 class="font-bold text-base text-slate-800 dark:text-white"><i class="fa-solid fa-headset text-indigo-600 mr-1.5"></i> Fila de Atendimento</h2>
+          <p class="text-xs text-slate-400">Gestão avançada de incidentes e chamados</p>
         </div>
         <div class="flex gap-2">
-          <button onclick="openHelpdeskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-bold shadow-sm flex items-center gap-1"><i class="fa-solid fa-plus"></i> Novo Chamado</button>
-          <button onclick="loadDataFromServer()" class="bg-slate-100 text-slate-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-slate-200 shadow-sm"><i class="fa-solid fa-rotate"></i></button>
+          <button onclick="openHelpdeskModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-indigo-500/20 flex items-center gap-1"><i class="fa-solid fa-plus"></i> Novo</button>
+          <button onclick="loadDataFromServer()" class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 px-3.5 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 shadow-sm"><i class="fa-solid fa-rotate"></i></button>
         </div>
       </div>
 
       <div class="flex justify-between items-center gap-2">
         <div class="flex gap-2">
-          <button onclick="renderTickets('Aberto')" id="filter-ticket-Aberto" class="px-4 py-1.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow-sm">Em Aberto</button>
-          <button onclick="renderTickets('Resolvido')" id="filter-ticket-Resolvido" class="px-4 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shadow-sm">Resolvidos</button>
+          <button onclick="renderTickets('Aberto')" id="filter-ticket-Aberto" class="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-500/20">Em Aberto</button>
+          <button onclick="renderTickets('Resolvido')" id="filter-ticket-Resolvido" class="px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">Resolvidos</button>
         </div>
-        <select id="ticket-priority-filter" onchange="renderTickets(currentTicketFilter)" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-700 shadow-sm focus:outline-none">
+        <select id="ticket-priority-filter" onchange="renderTickets(currentTicketFilter)" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 shadow-sm focus:outline-none">
           <option value="Todas">Todas as Prioridades</option>
           <option value="Urgente">🔴 Urgente</option>
           <option value="Média">🟡 Média</option>
@@ -227,18 +237,18 @@
 
     <!-- VIEW 4: RMA (GARANTIAS E DEVOLUÇÕES) -->
     <section id="view-rma" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
         <div>
-          <h2 class="font-bold text-base text-slate-800"><i class="fa-solid fa-truck-fast text-amber-600 mr-1.5"></i> Gestão de RMA</h2>
-          <p class="text-xs text-slate-500">Controle logístico de garantias</p>
+          <h2 class="font-bold text-base text-slate-800 dark:text-white"><i class="fa-solid fa-truck-fast text-amber-600 mr-1.5"></i> Gestão de RMA</h2>
+          <p class="text-xs text-slate-400">Controle logístico de garantias</p>
         </div>
-        <button onclick="openRMAModal()" class="bg-amber-100 text-amber-700 px-3 py-2 rounded-lg text-xs font-bold hover:bg-amber-200 shadow-sm"><i class="fa-solid fa-plus"></i> Novo Envio</button>
+        <button onclick="openRMAModal()" class="bg-amber-500 hover:bg-amber-600 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-amber-500/20"><i class="fa-solid fa-plus"></i> Novo Envio</button>
       </div>
 
-      <div class="flex gap-2 border-b border-slate-200 pb-2">
-        <button onclick="renderRMA('Aguardando Envio')" id="filter-rma-aguardando" class="px-3 py-1.5 rounded-full text-[11px] font-bold bg-amber-500 text-white shadow-sm">Pendentes</button>
-        <button onclick="renderRMA('Em Análise')" id="filter-rma-analise" class="px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 shadow-sm">Em Análise</button>
-        <button onclick="renderRMA('Concluído')" id="filter-rma-concluido" class="px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 shadow-sm">Concluídos</button>
+      <div class="flex gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+        <button onclick="renderRMA('Aguardando Envio')" id="filter-rma-aguardando" class="px-3.5 py-2 rounded-xl text-[11px] font-bold bg-amber-500 text-white shadow-md shadow-amber-500/20">Pendentes</button>
+        <button onclick="renderRMA('Em Análise')" id="filter-rma-analise" class="px-3.5 py-2 rounded-xl text-[11px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">Em Análise</button>
+        <button onclick="renderRMA('Concluído')" id="filter-rma-concluido" class="px-3.5 py-2 rounded-xl text-[11px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">Concluídos</button>
       </div>
 
       <div id="rma-list" class="space-y-3 pb-4"></div>
@@ -246,44 +256,44 @@
 
     <!-- VIEW 5: ESTATÍSTICAS / DASHBOARD ANALÍTICO -->
     <section id="view-stats" class="hidden space-y-4 pb-6">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
         <div>
-          <h2 class="font-bold text-base text-slate-800"><i class="fa-solid fa-chart-pie text-blue-600 mr-1.5"></i> Painel Estatístico</h2>
-          <p class="text-xs text-slate-500">Panorama geral dos ativos da infraestrutura</p>
+          <h2 class="font-bold text-base text-slate-800 dark:text-white"><i class="fa-solid fa-chart-pie text-blue-600 mr-1.5"></i> Painel Estatístico</h2>
+          <p class="text-xs text-slate-400">Panorama geral dos ativos da infraestrutura</p>
         </div>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-1">
           <span class="text-[11px] text-slate-400 font-semibold uppercase">Total de Máquinas</span>
-          <h3 id="stat-card-total" class="font-bold text-2xl text-blue-700">0</h3>
+          <h3 id="stat-card-total" class="font-bold text-2xl text-blue-600 dark:text-blue-400">0</h3>
         </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-1">
+        <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-1">
           <span class="text-[11px] text-slate-400 font-semibold uppercase">Setores Ativos</span>
-          <h3 id="stat-card-sectors" class="font-bold text-2xl text-indigo-700">0</h3>
+          <h3 id="stat-card-sectors" class="font-bold text-2xl text-indigo-600 dark:text-indigo-400">0</h3>
         </div>
       </div>
 
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-        <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-sliders mr-1 text-blue-600"></i> Distribuição por Estado</h3>
-        <div id="stats-status-bars" class="space-y-2 text-xs"></div>
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+        <h3 class="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider"><i class="fa-solid fa-sliders mr-1 text-blue-600"></i> Distribuição por Estado</h3>
+        <div id="stats-status-bars" class="space-y-2.5 text-xs"></div>
       </div>
 
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
-        <h3 class="font-bold text-xs text-slate-700 uppercase tracking-wider"><i class="fa-solid fa-desktop mr-1 text-purple-600"></i> Sistemas Operacionais (SO)</h3>
-        <div id="stats-os-bars" class="space-y-2 text-xs"></div>
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+        <h3 class="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider"><i class="fa-solid fa-desktop mr-1 text-purple-600"></i> Sistemas Operacionais (SO)</h3>
+        <div id="stats-os-bars" class="space-y-2.5 text-xs"></div>
       </div>
     </section>
 
     <!-- VIEW 6: ADMIN -->
     <section id="view-admin" class="hidden space-y-4">
-      <div id="admin-restricted-box" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 text-center hidden">
-        <i class="fa-solid fa-lock text-3xl text-amber-500 mb-2"></i><h3 class="font-bold text-slate-800 text-sm">Acesso Restrito ao Administrador</h3>
+      <div id="admin-restricted-box" class="bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 text-center hidden">
+        <i class="fa-solid fa-lock text-3xl text-amber-500 mb-2"></i><h3 class="font-bold text-slate-800 dark:text-white text-sm">Acesso Restrito ao Administrador</h3>
       </div>
-      <div id="admin-panel" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-        <div class="flex justify-between items-center border-b pb-2">
-          <h3 class="font-bold text-xs text-slate-700 uppercase"><i class="fa-solid fa-users-gear mr-1 text-blue-600"></i> Gerir Utilizadores</h3>
-          <button onclick="openUserModal()" class="bg-blue-600 text-white text-xs font-bold px-2.5 py-1 rounded shadow-sm">+ Novo</button>
+      <div id="admin-panel" class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+          <h3 class="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase"><i class="fa-solid fa-users-gear mr-1 text-blue-600"></i> Gerir Utilizadores</h3>
+          <button onclick="openUserModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl shadow-sm">+ Novo</button>
         </div>
         <div id="users-list" class="space-y-2 max-h-48 overflow-y-auto"></div>
       </div>
@@ -291,16 +301,16 @@
 
     <!-- VIEW 7: SETTINGS -->
     <section id="view-settings" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-        <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2 text-sm"><i class="fa-solid fa-user-shield text-blue-600"></i> Sessão Atual</h3>
-        <p class="text-xs text-slate-600">Conectado como: <strong id="current-user-display" class="text-blue-700">-</strong> (<span id="current-role-display" class="font-bold text-indigo-600">-</span>)</p>
-        <button onclick="handleLogout()" class="w-full bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-xs py-2.5 rounded-lg border border-red-200 mt-2">Terminar Sessão</button>
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 space-y-3">
+        <h3 class="font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2 text-sm"><i class="fa-solid fa-user-shield text-blue-600"></i> Sessão Atual</h3>
+        <p class="text-xs text-slate-600 dark:text-slate-300">Conectado como: <strong id="current-user-display" class="text-blue-600 dark:text-blue-400">-</strong> (<span id="current-role-display" class="font-bold text-indigo-600 dark:text-indigo-400">-</span>)</p>
+        <button onclick="handleLogout()" class="w-full bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 font-semibold text-xs py-3 rounded-xl border border-red-200 dark:border-red-900 mt-2 transition">Terminar Sessão</button>
       </div>
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
-        <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2 text-sm"><i class="fa-solid fa-database text-purple-600"></i> Backup JSON</h3>
-        <div class="grid grid-cols-2 gap-2 pt-1">
-          <button onclick="exportDatabaseJson()" class="bg-indigo-600 text-white font-bold text-xs py-2.5 rounded-xl shadow"><i class="fa-solid fa-download"></i> Exportar</button>
-          <label class="bg-slate-800 text-white font-bold text-xs py-2.5 rounded-xl shadow flex items-center justify-center cursor-pointer">
+      <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800 space-y-3">
+        <h3 class="font-bold text-slate-800 dark:text-white mb-1 flex items-center gap-2 text-sm"><i class="fa-solid fa-database text-purple-600"></i> Backup JSON</h3>
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <button onclick="exportDatabaseJson()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-xl shadow-md shadow-indigo-500/20 transition"><i class="fa-solid fa-download mr-1"></i> Exportar</button>
+          <label class="bg-slate-800 hover:bg-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs py-3 rounded-xl shadow-md flex items-center justify-center cursor-pointer transition">
             <i class="fa-solid fa-upload mr-1.5"></i> Restaurar
             <input type="file" id="import-json-file" accept=".json" onchange="importDatabaseJson(event)" class="hidden">
           </label>
@@ -310,8 +320,8 @@
   </main>
 
   <!-- BOTTOM NAVIGATION BAR -->
-  <nav class="bg-white border-t border-slate-200 flex-none fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-1 shadow-lg">
-    <button onclick="switchTab('sectors')" id="nav-sectors" class="flex flex-col items-center justify-center gap-0.5 text-blue-600 w-1/6">
+  <nav class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex-none fixed bottom-0 left-0 right-0 z-20 flex justify-around py-2 px-1 shadow-2xl transition-colors duration-200">
+    <button onclick="switchTab('sectors')" id="nav-sectors" class="flex flex-col items-center justify-center gap-0.5 text-blue-600 dark:text-blue-400 w-1/6">
       <i class="fa-solid fa-folder-open text-base"></i><span class="text-[8px] font-medium uppercase">Inventário</span>
     </button>
     <button onclick="switchTab('tickets')" id="nav-tickets" class="flex flex-col items-center justify-center gap-0.5 text-slate-400 w-1/6">
@@ -337,42 +347,42 @@
 
   <!-- MODAL: OPÇÕES DE SINCRONIZAÇÃO -->
   <div id="modal-sync-options" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl p-6 space-y-4">
-      <div class="flex justify-between items-center border-b pb-3">
-        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl p-6 space-y-4 border border-slate-100 dark:border-slate-800">
+      <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+        <h3 class="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
           <i class="fa-solid fa-rotate text-purple-600"></i> Opções de Sincronização
         </h3>
         <button onclick="document.getElementById('modal-sync-options').classList.add('hidden')" class="text-slate-400 hover:text-slate-600">
           <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
-      <p class="text-xs text-slate-500">Como deseja proceder com o envio para o Google Sheets?</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400">Como deseja proceder com o envio para o Google Sheets?</p>
       
       <div class="space-y-2.5">
-        <button onclick="executeSync('smart')" class="w-full bg-purple-600 hover:bg-purple-700 text-white p-3.5 rounded-xl flex items-center justify-between shadow-md transition text-left">
+        <button onclick="executeSync('smart')" class="w-full bg-purple-600 hover:bg-purple-700 text-white p-4 rounded-2xl flex items-center justify-between shadow-lg shadow-purple-500/20 transition text-left">
           <div class="flex items-center gap-3">
             <i class="fa-solid fa-cloud-arrow-up text-lg"></i>
             <div>
-              <span class="block font-bold text-xs">Enviar Apenas Novos / Atualizar</span>
-              <span class="block text-[10px] text-purple-200">Atualiza abas por andar sem duplicar</span>
+              <span class="block font-bold text-xs">Enviar / Atualizar (Smart)</span>
+              <span class="block text-[10px] text-purple-200">Organiza abas por andar sem duplicados</span>
             </div>
           </div>
-          <span class="bg-purple-700 text-[10px] font-bold px-2 py-1 rounded-lg">Recomendado</span>
+          <span class="bg-purple-700 text-[10px] font-bold px-2 py-1 rounded-xl">Recomendado</span>
         </button>
 
-        <button onclick="executeSync('force')" class="w-full bg-slate-800 hover:bg-slate-900 text-white p-3.5 rounded-xl flex items-center justify-between shadow-md transition text-left">
+        <button onclick="executeSync('force')" class="w-full bg-slate-800 hover:bg-slate-900 dark:bg-slate-800 text-white p-4 rounded-2xl flex items-center justify-between shadow-lg transition text-left">
           <div class="flex items-center gap-3">
             <i class="fa-solid fa-list-check text-lg"></i>
             <div>
               <span class="block font-bold text-xs">Sincronizar Tudo (Forçar)</span>
-              <span class="block text-[10px] text-slate-400">Reescreve toda a base nas abas</span>
+              <span class="block text-[10px] text-slate-400">Reescreve toda a base limpa nas abas</span>
             </div>
           </div>
-          <span class="bg-slate-700 text-[10px] font-bold px-2 py-1 rounded-lg">Completo</span>
+          <span class="bg-slate-700 text-[10px] font-bold px-2 py-1 rounded-xl">Completo</span>
         </button>
       </div>
 
-      <button onclick="document.getElementById('modal-sync-options').classList.add('hidden')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl transition mt-2">
+      <button onclick="document.getElementById('modal-sync-options').classList.add('hidden')" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs py-3 rounded-2xl transition mt-2">
         Cancelar
       </button>
     </div>
@@ -380,28 +390,28 @@
 
   <!-- MODAL: NOVO/EDITAR CHAMADO -->
   <div id="modal-helpdesk" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden flex flex-col">
-      <div class="px-5 py-4 border-b flex justify-between items-center bg-indigo-50">
-        <h3 class="font-bold text-indigo-900 text-sm"><i class="fa-solid fa-headset mr-1.5"></i> Abrir Novo Chamado</h3>
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col border border-slate-100 dark:border-slate-800">
+      <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-950/30">
+        <h3 class="font-bold text-indigo-900 dark:text-indigo-400 text-sm"><i class="fa-solid fa-headset mr-1.5"></i> Abrir Novo Chamado</h3>
         <button onclick="document.getElementById('modal-helpdesk').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <form onsubmit="saveHelpdeskTicket(event)" class="p-5 space-y-3 text-xs">
         <div>
-          <label class="block font-semibold text-slate-600 mb-1">Gabinete / Património (12 Dig ou N/A) *</label>
-          <input type="text" id="hd-machine-code" required placeholder="Ex: 991017251100" class="w-full border rounded-lg p-2 font-mono font-bold text-blue-800 text-sm focus:outline-none focus:border-blue-500">
+          <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Gabinete / Património (12 Dig ou N/A) *</label>
+          <input type="text" id="hd-machine-code" required placeholder="Ex: 991017251100" class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-2.5 font-mono font-bold text-blue-800 dark:text-blue-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Prioridade *</label>
-            <select id="hd-priority" class="w-full border rounded-lg p-2 bg-white font-bold text-slate-700">
+            <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Prioridade *</label>
+            <select id="hd-priority" class="w-full border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 bg-white dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-200">
               <option value="Baixa">🟢 Baixa</option>
               <option value="Média" selected>🟡 Média</option>
               <option value="Urgente">🔴 Urgente</option>
             </select>
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Categoria *</label>
-            <select id="hd-category" class="w-full border rounded-lg p-2 bg-white font-bold text-slate-700">
+            <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Categoria *</label>
+            <select id="hd-category" class="w-full border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 bg-white dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-200">
               <option value="Hardware">Hardware / Gabinete</option>
               <option value="Rede">Rede / Conectividade</option>
               <option value="Impressora">Impressora / Periférico</option>
@@ -411,16 +421,16 @@
           </div>
         </div>
         <div>
-          <label class="block font-semibold text-slate-600 mb-1">Solicitante *</label>
-          <input type="text" id="hd-requester" required placeholder="Nome do colaborador / setor" class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:border-blue-500">
+          <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Solicitante *</label>
+          <input type="text" id="hd-requester" required placeholder="Nome do colaborador / setor" class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
         </div>
         <div>
-          <label class="block font-semibold text-slate-600 mb-1">Descrição do Problema *</label>
-          <textarea id="hd-description" rows="3" required placeholder="Detalhe o incidente..." class="w-full border rounded-lg p-2 text-sm focus:outline-none focus:border-blue-500"></textarea>
+          <label class="block font-semibold text-slate-600 dark:text-slate-300 mb-1">Descrição do Problema *</label>
+          <textarea id="hd-description" rows="3" required placeholder="Detalhe o incidente..." class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
         </div>
-        <div class="flex justify-end gap-2 pt-2 border-t">
-          <button type="button" onclick="document.getElementById('modal-helpdesk').classList.add('hidden')" class="px-4 py-2 border rounded-lg">Cancelar</button>
-          <button type="submit" class="px-5 py-2 font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow">Registar Chamado</button>
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <button type="button" onclick="document.getElementById('modal-helpdesk').classList.add('hidden')" class="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl">Cancelar</button>
+          <button type="submit" class="px-5 py-2 font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-md">Registar Chamado</button>
         </div>
       </form>
     </div>
@@ -428,151 +438,151 @@
 
   <!-- MODAL: ADD/EDIT MACHINE -->
   <div id="modal-machine" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
-      <div class="px-5 py-4 border-b border-slate-100 flex justify-between flex-none">
-        <h3 class="font-bold text-slate-800">Cadastrar Máquina</h3>
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] flex flex-col border border-slate-100 dark:border-slate-800">
+      <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between flex-none">
+        <h3 class="font-bold text-slate-800 dark:text-white">Cadastrar Máquina</h3>
         <button onclick="closeMachineModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <form onsubmit="saveMachine(event)" class="p-5 space-y-4 overflow-y-auto flex-1">
         <input type="hidden" id="edit-machine-id">
         <div>
-          <div class="flex justify-between items-center mb-1"><label class="text-xs font-semibold text-slate-600">Etiqueta Gabinete (12 Dig) *</label><button type="button" onclick="setNotApplicable('machine-code')" class="text-[11px] text-amber-600 font-bold hover:underline">⚠️ N/A</button></div>
+          <div class="flex justify-between items-center mb-1"><label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Etiqueta Gabinete (12 Dig) *</label><button type="button" onclick="setNotApplicable('machine-code')" class="text-[11px] text-amber-600 font-bold hover:underline">⚠️ N/A</button></div>
           <div class="flex gap-2">
-            <input type="text" id="machine-code" maxlength="12" oninput="this.value=this.value.replace(/\D/g, '')" placeholder="Ex: 991017251100" class="flex-1 border rounded-lg p-2 text-sm font-mono font-bold text-blue-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            <button type="button" onclick="startScanner('code')" class="bg-slate-800 text-white px-3 rounded-lg flex items-center gap-1 text-xs font-semibold shadow"><i class="fa-solid fa-barcode"></i> Ler</button>
+            <input type="text" id="machine-code" maxlength="12" oninput="this.value=this.value.replace(/\D/g, '')" placeholder="Ex: 991017251100" class="flex-1 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-2.5 text-sm font-mono font-bold text-blue-800 dark:text-blue-400 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <button type="button" onclick="startScanner('code')" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 rounded-xl flex items-center gap-1 text-xs font-semibold shadow">Ler</button>
           </div>
         </div>
         <div>
-          <div class="flex justify-between items-center mb-1"><label class="text-xs font-semibold text-slate-600">Etiqueta Monitor *</label><button type="button" onclick="setNotApplicable('machine-monitor')" class="text-[11px] text-amber-600 font-bold hover:underline">⚠️ N/A</button></div>
+          <div class="flex justify-between items-center mb-1"><label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Etiqueta Monitor *</label><button type="button" onclick="setNotApplicable('machine-monitor')" class="text-[11px] text-amber-600 font-bold hover:underline">⚠️ N/A</button></div>
           <div class="flex gap-2">
-            <input type="text" id="machine-monitor" oninput="this.value=this.value.replace(/\D/g, '')" class="flex-1 border rounded-lg p-2 text-sm font-mono font-bold text-emerald-800 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-            <button type="button" onclick="startScanner('monitor')" class="bg-slate-800 text-white px-3 rounded-lg flex items-center gap-1 text-xs font-semibold shadow"><i class="fa-solid fa-barcode"></i> Ler</button>
+            <input type="text" id="machine-monitor" oninput="this.value=this.value.replace(/\D/g, '')" class="flex-1 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-2.5 text-sm font-mono font-bold text-emerald-800 dark:text-emerald-400 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <button type="button" onclick="startScanner('monitor')" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 rounded-xl flex items-center gap-1 text-xs font-semibold shadow">Ler</button>
           </div>
         </div>
-        <div id="scanner-container" class="hidden border-2 border-dashed border-blue-400 p-2 rounded-xl bg-slate-50"><div id="reader" class="w-full"></div><button type="button" onclick="stopScanner()" class="mt-2 w-full bg-red-100 text-red-600 text-xs font-bold py-1.5 rounded-lg">Fechar Leitor</button></div>
+        <div id="scanner-container" class="hidden border-2 border-dashed border-blue-400 p-2 rounded-2xl bg-slate-50 dark:bg-slate-800"><div id="reader" class="w-full"></div><button type="button" onclick="stopScanner()" class="mt-2 w-full bg-red-100 dark:bg-red-950 text-red-600 text-xs font-bold py-2 rounded-xl">Fechar Leitor</button></div>
         <div>
-          <div class="flex justify-between items-center mb-1"><label class="text-xs font-semibold text-slate-600">Modelo *</label><div class="flex gap-2"><button type="button" onclick="removeModelOptionPrompt()" class="text-[11px] text-red-600 font-bold">- Rem</button><button type="button" onclick="addNewModelOption()" class="text-[11px] text-blue-600 font-bold">+ Nov</button></div></div>
-          <input type="text" id="machine-model" list="model-options" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <div class="flex justify-between items-center mb-1"><label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Modelo *</label><div class="flex gap-2"><button type="button" onclick="removeModelOptionPrompt()" class="text-[11px] text-red-600 font-bold">- Rem</button><button type="button" onclick="addNewModelOption()" class="text-[11px] text-blue-600 font-bold">+ Nov</button></div></div>
+          <input type="text" id="machine-model" list="model-options" class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
           <datalist id="model-options"></datalist>
         </div>
         <div class="grid grid-cols-2 gap-2">
-          <div><label class="text-xs font-semibold text-slate-600 mb-1 block">SO *</label><select id="machine-os" class="w-full border rounded-lg p-2 text-sm bg-white font-semibold"><option value="Win11">Windows 11</option><option value="Win10">Windows 10</option><option value="Linux">Linux</option></select></div>
-          <div><label class="text-xs font-semibold text-slate-600 mb-1 block">Estado *</label><select id="machine-status" class="w-full border rounded-lg p-2 text-sm bg-white"><option value="Operacional">Operacional</option><option value="Manutenção">Em Manutenção</option><option value="Defeito">Defeito</option></select></div>
+          <div><label class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1 block">SO *</label><select id="machine-os" class="w-full border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-sm bg-white dark:bg-slate-800 font-semibold"><option value="Win11">Windows 11</option><option value="Win10">Windows 10</option><option value="Linux">Linux</option></select></div>
+          <div><label class="text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1 block">Estado *</label><select id="machine-status" class="w-full border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-sm bg-white dark:bg-slate-800"><option value="Operacional">Operacional</option><option value="Manutenção">Em Manutenção</option><option value="Defeito">Defeito</option></select></div>
         </div>
         <div>
-          <div class="flex justify-between items-center mb-1"><label class="text-xs font-semibold text-slate-600">Periféricos *</label><div class="flex gap-2"><button type="button" onclick="addNewPeripheralPrompt()" class="text-[11px] text-emerald-600 font-bold">+ Add</button><button type="button" onclick="toggleCompleteMachine()" class="text-[11px] text-blue-600 font-bold">⚡ Todos</button></div></div>
-          <div id="peripherals-checkboxes-container" class="grid grid-cols-2 gap-2 bg-slate-50 border rounded-xl p-3 text-xs"></div>
+          <div class="flex justify-between items-center mb-1"><label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Periféricos *</label><div class="flex gap-2"><button type="button" onclick="addNewPeripheralPrompt()" class="text-[11px] text-emerald-600 font-bold">+ Add</button><button type="button" onclick="toggleCompleteMachine()" class="text-[11px] text-blue-600 font-bold">⚡ Todos</button></div></div>
+          <div id="peripherals-checkboxes-container" class="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-xs"></div>
         </div>
-        <div><label class="block text-xs font-semibold text-slate-600 mb-1">Próxima Revisão Preventiva</label><input type="date" id="machine-next-review" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></div>
-        <div><label class="block text-xs font-semibold text-slate-600 mb-1">Observações</label><textarea id="machine-notes" rows="2" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea></div>
-        <div class="flex justify-end gap-2 pt-2 border-t flex-none"><button type="button" onclick="closeMachineModal()" class="px-4 py-2 text-xs border rounded-lg">Cancelar</button><button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow">Salvar</button></div>
+        <div><label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Próxima Revisão Preventiva</label><input type="date" id="machine-next-review" class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></div>
+        <div><label class="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">Observações</label><textarea id="machine-notes" rows="2" class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea></div>
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800 flex-none"><button type="button" onclick="closeMachineModal()" class="px-4 py-2 text-xs border border-slate-200 dark:border-slate-700 rounded-xl">Cancelar</button><button type="submit" class="px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md">Salvar</button></div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: DETALHES & PRONTUÁRIO -->
   <div id="modal-machine-details" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[90vh]">
-      <div class="px-5 py-4 border-b flex justify-between items-center flex-none bg-blue-50">
-        <h3 class="font-bold text-blue-800 text-sm"><i class="fa-solid fa-laptop-medical mr-1.5"></i> Ficha da Máquina</h3>
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh] border border-slate-100 dark:border-slate-800">
+      <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center flex-none bg-blue-50/50 dark:bg-blue-950/30">
+        <h3 class="font-bold text-blue-800 dark:text-blue-400 text-sm"><i class="fa-solid fa-laptop-medical mr-1.5"></i> Ficha da Máquina</h3>
         <button onclick="closeMachineDetails()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div class="flex border-b bg-white text-xs font-bold flex-none">
-        <button type="button" onclick="switchMachineTab('info')" id="tab-btn-info" class="flex-1 py-2.5 text-blue-600 border-b-2 border-blue-600 bg-blue-50/30">Dados</button>
-        <button type="button" onclick="switchMachineTab('history')" id="tab-btn-history" class="flex-1 py-2.5 text-slate-500 border-b-2 border-transparent">Prontuário</button>
+      <div class="flex border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold flex-none">
+        <button type="button" onclick="switchMachineTab('info')" id="tab-btn-info" class="flex-1 py-3 text-blue-600 border-b-2 border-blue-600 bg-blue-50/30 dark:bg-blue-950/20">Dados</button>
+        <button type="button" onclick="switchMachineTab('history')" id="tab-btn-history" class="flex-1 py-3 text-slate-400 border-b-2 border-transparent">Prontuário</button>
       </div>
-      <div id="printable-ticket" class="p-5 space-y-4 overflow-y-auto flex-1 text-xs bg-white">
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-          <div class="flex justify-between border-b pb-1.5"><span class="text-slate-500 font-semibold">Ticket:</span><span id="detail-ticket" class="font-mono font-bold text-purple-700 text-sm">-</span></div>
-          <div class="flex justify-between border-b pb-1.5"><span class="text-slate-500 font-semibold">Local:</span><span id="detail-sector" class="font-bold text-indigo-900 text-right">-</span></div>
-          <div class="flex justify-between border-b pb-1.5"><span class="text-slate-500 font-semibold">Gabinete:</span><span id="detail-code" class="font-mono font-bold text-blue-700 text-sm"></span></div>
-          <div class="flex justify-between border-b pb-1.5"><span class="text-slate-500 font-semibold">Monitor:</span><span id="detail-monitor" class="font-mono font-bold text-emerald-700 text-sm"></span></div>
-          <div class="flex justify-between border-b pb-1.5"><span class="text-slate-500 font-semibold">Modelo:</span><span id="detail-model" class="font-medium"></span></div>
-          <div class="flex justify-between border-b pb-1.5"><span class="text-slate-500 font-semibold">Estado:</span><span id="detail-status" class="px-2 py-0.5 rounded-full border bg-white font-medium"></span></div>
-          <div class="flex justify-between pb-0.5"><span class="text-slate-500 font-semibold">Próx. Revisão:</span><span id="detail-review" class="font-bold text-amber-600">-</span></div>
+      <div id="printable-ticket" class="p-5 space-y-4 overflow-y-auto flex-1 text-xs bg-white dark:bg-slate-900">
+        <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700 space-y-2.5">
+          <div class="flex justify-between border-b border-slate-200/60 dark:border-slate-700 pb-2"><span class="text-slate-400 font-semibold">Ticket:</span><span id="detail-ticket" class="font-mono font-bold text-purple-600 dark:text-purple-400 text-sm">-</span></div>
+          <div class="flex justify-between border-b border-slate-200/60 dark:border-slate-700 pb-2"><span class="text-slate-400 font-semibold">Local:</span><span id="detail-sector" class="font-bold text-indigo-900 dark:text-indigo-300 text-right">-</span></div>
+          <div class="flex justify-between border-b border-slate-200/60 dark:border-slate-700 pb-2"><span class="text-slate-400 font-semibold">Gabinete:</span><span id="detail-code" class="font-mono font-bold text-blue-600 dark:text-blue-400 text-sm"></span></div>
+          <div class="flex justify-between border-b border-slate-200/60 dark:border-slate-700 pb-2"><span class="text-slate-400 font-semibold">Monitor:</span><span id="detail-monitor" class="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm"></span></div>
+          <div class="flex justify-between border-b border-slate-200/60 dark:border-slate-700 pb-2"><span class="text-slate-400 font-semibold">Modelo:</span><span id="detail-model" class="font-medium"></span></div>
+          <div class="flex justify-between border-b border-slate-200/60 dark:border-slate-700 pb-2"><span class="text-slate-400 font-semibold">Estado:</span><span id="detail-status" class="px-2.5 py-0.5 rounded-full border bg-white dark:bg-slate-900 font-medium"></span></div>
+          <div class="flex justify-between pb-0.5"><span class="text-slate-400 font-semibold">Próx. Revisão:</span><span id="detail-review" class="font-bold text-amber-600">-</span></div>
         </div>
       </div>
-      <div id="machine-tab-history" class="hidden flex-col overflow-hidden flex-1 bg-white">
-        <div class="p-3 border-b bg-slate-50 flex-none flex gap-2">
-          <input type="text" id="manual-log-desc" placeholder="Registar nota..." class="flex-1 text-xs px-3 py-2 rounded-lg border focus:outline-none focus:border-blue-500">
-          <button type="button" onclick="addManualHistoryLog(event)" class="bg-slate-800 text-white px-3 py-2 rounded-lg text-xs font-bold flex-none"><i class="fa-solid fa-plus"></i></button>
+      <div id="machine-tab-history" class="hidden flex-col overflow-hidden flex-1 bg-white dark:bg-slate-900">
+        <div class="p-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 flex-none flex gap-2">
+          <input type="text" id="manual-log-desc" placeholder="Registar nota..." class="flex-1 text-xs px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:border-blue-500">
+          <button type="button" onclick="addManualHistoryLog(event)" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs font-bold flex-none shadow"><i class="fa-solid fa-plus"></i></button>
         </div>
-        <div id="machine-history-list" class="p-4 space-y-3 overflow-y-auto flex-1 history-scroll text-xs bg-slate-50/50"></div>
+        <div id="machine-history-list" class="p-4 space-y-3 overflow-y-auto flex-1 history-scroll text-xs bg-slate-50/50 dark:bg-slate-950/50"></div>
       </div>
-      <div class="p-4 border-t flex-none bg-slate-50 flex justify-between">
-        <button type="button" onclick="window.print()" class="px-4 py-2 text-xs font-bold text-white bg-slate-800 rounded-lg shadow-sm"><i class="fa-solid fa-print"></i> Imprimir</button>
-        <button type="button" onclick="closeMachineDetails()" class="px-4 py-2 text-xs font-bold text-slate-700 bg-white border rounded-lg shadow-sm hover:bg-slate-100">Fechar</button>
+      <div class="p-4 border-t border-slate-100 dark:border-slate-800 flex-none bg-slate-50/50 dark:bg-slate-900 flex justify-between">
+        <button type="button" onclick="window.print()" class="px-4 py-2.5 text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-md"><i class="fa-solid fa-print mr-1"></i> Imprimir</button>
+        <button type="button" onclick="closeMachineDetails()" class="px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">Fechar</button>
       </div>
     </div>
   </div>
 
   <!-- OUTROS MODAIS -->
-  <div id="modal-folder" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl"><div class="px-5 py-4 border-b flex justify-between items-center"><h3 class="font-bold text-sm">Nova Pasta</h3><button onclick="document.getElementById('modal-folder').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div>
+  <div id="modal-folder" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-800"><div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center"><h3 class="font-bold text-sm">Nova Pasta</h3><button onclick="document.getElementById('modal-folder').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div>
       <form onsubmit="saveFolder(event)" class="p-5 space-y-4 text-xs"><input type="hidden" id="folder-id">
-        <div><label class="block font-semibold mb-1">Andar</label><select id="folder-floor-id" required class="w-full border rounded-lg p-2.5 text-sm font-bold"></select></div>
-        <div><label class="block font-semibold mb-1">Setor</label><input type="text" id="folder-name" required class="w-full border rounded-lg p-2.5 text-sm"></div>
-        <div class="flex justify-end gap-2 pt-2"><button type="submit" class="px-4 py-2 font-bold text-white bg-blue-600 rounded-lg">Salvar</button></div>
+        <div><label class="block font-semibold mb-1">Andar</label><select id="folder-floor-id" required class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-3 text-sm font-bold"></select></div>
+        <div><label class="block font-semibold mb-1">Setor</label><input type="text" id="folder-name" required class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-3 text-sm"></div>
+        <div class="flex justify-end gap-2 pt-2"><button type="submit" class="px-5 py-2.5 font-bold text-white bg-blue-600 rounded-xl shadow-md">Salvar</button></div>
       </form>
     </div>
   </div>
 
-  <div id="modal-select-folder" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-lg shadow-xl flex flex-col max-h-[85vh]">
-      <div class="px-5 py-4 border-b flex justify-between items-center bg-indigo-50 flex-none">
-        <h3 class="font-bold text-indigo-900 text-sm flex items-center gap-2"><i class="fa-solid fa-folder-tree"></i> Selecionar Setor</h3>
+  <div id="modal-select-folder" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] border border-slate-100 dark:border-slate-800">
+      <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-950/30 flex-none">
+        <h3 class="font-bold text-indigo-900 dark:text-indigo-400 text-sm flex items-center gap-2"><i class="fa-solid fa-folder-tree"></i> Selecionar Setor</h3>
         <button onclick="document.getElementById('modal-select-folder').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
-      <div class="p-4 bg-slate-50 flex-none border-b border-slate-100">
-        <input type="text" id="interactive-folder-search" oninput="filterInteractiveFolders(this.value)" placeholder="Filtrar por nome do setor ou andar..." class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-xs shadow-sm focus:outline-none focus:border-blue-500">
+      <div class="p-4 bg-slate-50 dark:bg-slate-800/50 flex-none border-b border-slate-100 dark:border-slate-800">
+        <input type="text" id="interactive-folder-search" oninput="filterInteractiveFolders(this.value)" placeholder="Filtrar por nome do setor ou andar..." class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-2xl px-4 py-3 text-xs shadow-sm focus:outline-none focus:border-blue-500">
       </div>
-      <div id="interactive-folders-list" class="p-4 space-y-2 overflow-y-auto flex-1 text-xs bg-slate-50/50"></div>
+      <div id="interactive-folders-list" class="p-4 space-y-2 overflow-y-auto flex-1 text-xs bg-slate-50/50 dark:bg-slate-950/50"></div>
     </div>
   </div>
 
-  <div id="modal-all-folders" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-2 sm:p-4">
-    <div class="bg-white rounded-xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]">
-      <div class="px-5 py-4 flex justify-between items-center bg-indigo-50/50 rounded-t-xl flex-none border-b border-indigo-100">
-        <h3 class="font-bold text-indigo-900 text-base flex items-center gap-2"><i class="fa-solid fa-list-ul text-indigo-700"></i> Todas as Pastas Cadastradas</h3>
+  <div id="modal-all-folders" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh] border border-slate-100 dark:border-slate-800">
+      <div class="px-5 py-4 flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-950/30 rounded-t-3xl flex-none border-b border-indigo-100 dark:border-indigo-900/50">
+        <h3 class="font-bold text-indigo-900 dark:text-indigo-400 text-base flex items-center gap-2"><i class="fa-solid fa-list-ul text-indigo-600"></i> Todas as Pastas Cadastradas</h3>
         <button onclick="document.getElementById('modal-all-folders').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
-      <div class="p-4 bg-white border-b border-slate-100 flex flex-col sm:flex-row gap-3 flex-none">
-        <input type="text" id="modal-folder-search" oninput="filterModalFolders(this.value)" placeholder="Filtrar por nome do setor ou andar..." class="flex-1 border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 shadow-sm">
+      <div class="p-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-3 flex-none">
+        <input type="text" id="modal-folder-search" oninput="filterModalFolders(this.value)" placeholder="Filtrar por nome do setor ou andar..." class="flex-1 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 shadow-sm">
         <div class="flex gap-2">
-          <button onclick="exportAllFoldersZip()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2.5 rounded-lg text-sm shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-file-zipper"></i> ZIP</button>
-          <button onclick="importFoldersModal()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2.5 rounded-lg text-sm shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-up"></i> Import</button>
+          <button onclick="exportAllFoldersZip()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-3 rounded-2xl text-sm shadow-md shadow-blue-500/20 flex items-center gap-1.5"><i class="fa-solid fa-file-zipper"></i> ZIP</button>
+          <button onclick="importFoldersModal()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-3 rounded-2xl text-sm shadow-md shadow-amber-500/20 flex items-center gap-1.5"><i class="fa-solid fa-file-arrow-up"></i> Import</button>
         </div>
       </div>
-      <div class="px-4 py-3 bg-slate-50 flex flex-wrap items-center gap-3 flex-none text-sm border-b border-slate-200 shadow-inner">
-        <label class="flex items-center gap-2 font-medium text-slate-700 cursor-pointer w-full sm:w-auto">
+      <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 flex flex-wrap items-center gap-3 flex-none text-sm border-b border-slate-200/80 dark:border-slate-800 shadow-inner">
+        <label class="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300 cursor-pointer w-full sm:w-auto">
           <input type="checkbox" id="chk-all-folders" onchange="toggleAllFoldersSelection(this.checked)" class="w-4 h-4 text-blue-600 rounded border-slate-300">
           <span id="folders-selected-count">0 selecionada(s)</span>
         </label>
         <div class="flex-1 flex flex-wrap items-center gap-2 justify-start sm:justify-end">
-          <select id="bulk-move-target" class="border border-slate-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none text-indigo-900 font-medium">
+          <select id="bulk-move-target" class="border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 py-2 text-sm font-medium text-indigo-900 dark:text-indigo-300 focus:outline-none">
             <option value="">Mover para...</option>
           </select>
-          <button onclick="moveSelectedFolders()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm">Mover</button>
-          <button onclick="deleteSelectedFolders()" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> Excluir</button>
-          <button onclick="clearEmptyFolders()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3 py-1.5 rounded-lg shadow-sm flex items-center gap-1.5"><i class="fa-solid fa-broom"></i> Vazias</button>
+          <button onclick="moveSelectedFolders()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-3.5 py-2 rounded-xl shadow-md">Mover</button>
+          <button onclick="deleteSelectedFolders()" class="bg-red-500 hover:bg-red-600 text-white font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5"><i class="fa-solid fa-trash-can"></i> Excluir</button>
+          <button onclick="clearEmptyFolders()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3.5 py-2 rounded-xl shadow-md flex items-center gap-1.5"><i class="fa-solid fa-broom"></i> Vazias</button>
         </div>
       </div>
-      <div id="modal-all-folders-container" class="p-4 space-y-3 overflow-y-auto flex-1 bg-white"></div>
-      <div class="px-5 py-3 border-t border-slate-200 bg-white flex justify-between items-center rounded-b-xl flex-none">
-        <button onclick="exportFoldersListExcel()" class="text-emerald-600 hover:text-emerald-700 font-bold text-sm flex items-center gap-1.5"><i class="fa-solid fa-file-excel"></i> Exportar Lista (Excel)</button>
-        <button onclick="document.getElementById('modal-all-folders').classList.add('hidden')" class="px-5 py-2 border border-slate-300 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 shadow-sm">Fechar</button>
+      <div id="modal-all-folders-container" class="p-4 space-y-3 overflow-y-auto flex-1 bg-white dark:bg-slate-900"></div>
+      <div class="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-between items-center rounded-b-3xl flex-none">
+        <button onclick="exportFoldersListExcel()" class="text-emerald-600 dark:text-emerald-400 font-bold text-sm flex items-center gap-1.5"><i class="fa-solid fa-file-excel"></i> Exportar Lista (Excel)</button>
+        <button onclick="document.getElementById('modal-all-folders').classList.add('hidden')" class="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 shadow-sm">Fechar</button>
       </div>
     </div>
   </div>
 
-  <div id="modal-user" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-sm shadow-xl"><div class="px-5 py-4 border-b flex justify-between"><h3 class="font-bold">Novo Utilizador</h3><button onclick="document.getElementById('modal-user').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div>
-      <form onsubmit="saveUser(event)" class="p-5 space-y-3"><input type="text" id="modal-username" required placeholder="Usuário" class="w-full border rounded-lg p-2 text-sm"><input type="password" id="modal-password" required placeholder="Senha" class="w-full border rounded-lg p-2 text-sm"><select id="modal-role" class="w-full border rounded-lg p-2 text-sm bg-white"><option value="technician">Técnico</option><option value="admin">Administrador</option></select><button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg mt-2">Salvar</button></form>
+  <div id="modal-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-sm shadow-2xl border border-slate-100 dark:border-slate-800"><div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between"><h3 class="font-bold">Novo Utilizador</h3><button onclick="document.getElementById('modal-user').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div>
+      <form onsubmit="saveUser(event)" class="p-5 space-y-3"><input type="text" id="modal-username" required placeholder="Usuário" class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-3 text-sm"><input type="password" id="modal-password" required placeholder="Senha" class="w-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl p-3 text-sm"><select id="modal-role" class="w-full border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-sm bg-white dark:bg-slate-800"><option value="technician">Técnico</option><option value="admin">Administrador</option></select><button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl mt-2 shadow-md">Salvar</button></form>
     </div>
   </div>
 
-  <div id="modal-export" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-md shadow-xl flex flex-col max-h-[85vh]"><div class="px-5 py-4 border-b flex justify-between items-center bg-emerald-50"><h3 class="font-bold text-emerald-800">Exportar Excel</h3><button onclick="document.getElementById('modal-export').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div><div class="p-5 flex-1 overflow-y-auto"><div id="export-sectors-checkboxes" class="space-y-2 border rounded-xl p-3 bg-slate-50 text-xs"></div></div><div class="p-4 border-t flex justify-end gap-2"><button onclick="generateAndDownloadCSV()" class="px-5 py-2 text-xs font-bold text-white bg-emerald-600 rounded-lg">Baixar CSV</button></div></div>
+  <div id="modal-export" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl flex flex-col max-h-[85vh] border border-slate-100 dark:border-slate-800"><div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-emerald-50/50 dark:bg-emerald-950/30"><h3 class="font-bold text-emerald-800 dark:text-emerald-400">Exportar Excel</h3><button onclick="document.getElementById('modal-export').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button></div><div class="p-5 flex-1 overflow-y-auto"><div id="export-sectors-checkboxes" class="space-y-2 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 bg-slate-50 dark:bg-slate-800 text-xs"></div></div><div class="p-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2"><button onclick="generateAndDownloadCSV()" class="px-5 py-2.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-md">Baixar CSV</button></div></div>
   </div>
 
   <!-- JAVASCRIPT & SUPABASE APP LOGIC -->
@@ -592,6 +602,10 @@
 
     window.onload = async () => {
       loadCustomPeripheralsFromStorage(); loadCustomModelsFromStorage();
+      if(localStorage.getItem('reg_dark_mode') === 'true') {
+        document.documentElement.classList.add('dark');
+        document.getElementById('dark-mode-icon').className = "fa-solid fa-sun";
+      }
       sessionStorage.removeItem('reg_current_user');
       await loadDataFromServer();
       document.getElementById('view-login').classList.remove('hidden');
@@ -600,6 +614,12 @@
       window.addEventListener('offline', () => document.getElementById('offline-banner').classList.remove('hidden'));
       if(supabaseClient) supabaseClient.channel('public-db').on('postgres_changes', { event: '*', schema: 'public' }, () => loadDataFromServer()).subscribe();
     };
+
+    function toggleDarkMode() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('reg_dark_mode', isDark);
+      document.getElementById('dark-mode-icon').className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+    }
 
     function switchTab(tab) {
       ['sectors','items','tickets','rma','stats','admin','settings'].forEach(t => {
@@ -619,7 +639,7 @@
         document.getElementById('view-tickets').classList.remove('hidden'); document.getElementById('nav-tickets').classList.replace('text-slate-400', 'text-blue-600');
         document.getElementById('app-title').innerText = "Helpdesk"; renderTickets(currentTicketFilter);
       } else if(tab === 'rma') {
-        document.getElementById('view-rma').classList.remove('hidden'); document.getElementById('nav-rma').classList.replace('text-slate-400', 'text-amber-600');
+        document.getElementById('view-rma').classList.remove('hidden'); document.getElementById('nav-rma').classList.replace('text-slate-400', 'text-amber-500');
         document.getElementById('app-title').innerText = "RMA - Garantias"; renderRMA(currentRmaFilter);
       } else if(tab === 'stats') {
         document.getElementById('view-stats').classList.remove('hidden'); document.getElementById('nav-stats').classList.replace('text-slate-400', 'text-blue-600');
@@ -688,7 +708,6 @@
       return c.length >= 10 ? `N°${c.substring(5, 10)}` : `N°${c}`;
     }
 
-    // --- IMPORTAÇÃO EXCEL INTELIGENTE ---
     async function handleExcelImport(event) {
       const file = event.target.files[0]; if (!file) return;
       const reader = new FileReader();
@@ -730,12 +749,11 @@
       reader.readAsArrayBuffer(file); event.target.value = '';
     }
 
-    // --- RMA LÓGICA ---
     function renderRMA(status) {
       currentRmaFilter = status;
-      document.getElementById('filter-rma-aguardando').className = status === 'Aguardando Envio' ? "px-3 py-1.5 rounded-full text-[11px] font-bold bg-amber-500 text-white shadow-sm" : "px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600";
-      document.getElementById('filter-rma-analise').className = status === 'Em Análise' ? "px-3 py-1.5 rounded-full text-[11px] font-bold bg-blue-600 text-white shadow-sm" : "px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600";
-      document.getElementById('filter-rma-concluido').className = status === 'Concluído' ? "px-3 py-1.5 rounded-full text-[11px] font-bold bg-emerald-600 text-white shadow-sm" : "px-3 py-1.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600";
+      document.getElementById('filter-rma-aguardando').className = status === 'Aguardando Envio' ? "px-3.5 py-2 rounded-xl text-[11px] font-bold bg-amber-500 text-white shadow-md shadow-amber-500/20" : "px-3.5 py-2 rounded-xl text-[11px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300";
+      document.getElementById('filter-rma-analise').className = status === 'Em Análise' ? "px-3.5 py-2 rounded-xl text-[11px] font-bold bg-blue-600 text-white shadow-md shadow-blue-500/20" : "px-3.5 py-2 rounded-xl text-[11px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300";
+      document.getElementById('filter-rma-concluido').className = status === 'Concluído' ? "px-3.5 py-2 rounded-xl text-[11px] font-bold bg-emerald-600 text-white shadow-md shadow-emerald-500/20" : "px-3.5 py-2 rounded-xl text-[11px] font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300";
 
       const c = document.getElementById('rma-list'); c.innerHTML = '';
       const filtered = rmaTickets.filter(r => r.status === status);
@@ -744,13 +762,13 @@
       filtered.forEach(rma => {
         const m = machines.find(x => x.id === rma.machine_id), code = m ? m.code : 'N/A';
         c.innerHTML += `
-          <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-            <div class="flex justify-between items-start border-b border-slate-100 pb-2 mb-2">
-              <div><span class="text-[10px] font-bold text-amber-500 uppercase tracking-wider">${rma.provider}</span><h4 class="font-bold text-slate-800 text-sm mt-0.5"><i class="fa-solid fa-file-invoice text-slate-400"></i> NF-e: ${rma.nfe || 'S/N'}</h4></div>
-              <button class="bg-slate-100 text-blue-700 font-mono text-[10px] px-2 py-1 rounded font-bold">Gab: ${code}</button>
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border border-slate-200/80 dark:border-slate-800">
+            <div class="flex justify-between items-start border-b border-slate-100 dark:border-slate-800 pb-2.5 mb-2.5">
+              <div><span class="text-[10px] font-bold text-amber-500 uppercase tracking-wider">${rma.provider}</span><h4 class="font-bold text-slate-800 dark:text-white text-sm mt-0.5"><i class="fa-solid fa-file-invoice text-slate-400"></i> NF-e: ${rma.nfe || 'S/N'}</h4></div>
+              <button class="bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-mono text-[10px] px-2.5 py-1 rounded-xl font-bold">Gab: ${code}</button>
             </div>
-            <p class="text-xs text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-100 italic mb-3">"${rma.defect_description}"</p>
-            <select onchange="updateRmaStatus('${rma.id}', this.value)" class="w-full bg-white border border-slate-300 rounded-lg text-xs font-bold px-2 py-2 text-slate-700 focus:outline-none">
+            <p class="text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 italic mb-3">"${rma.defect_description}"</p>
+            <select onchange="updateRmaStatus('${rma.id}', this.value)" class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold px-3 py-2.5 text-slate-700 dark:text-slate-200 focus:outline-none">
               <option value="Aguardando Envio" ${rma.status==='Aguardando Envio'?'selected':''}>Aguardando Envio</option>
               <option value="Em Análise" ${rma.status==='Em Análise'?'selected':''}>Em Análise (Enviado)</option>
               <option value="Concluído" ${rma.status==='Concluído'?'selected':''}>RMA Concluído</option>
@@ -773,7 +791,6 @@
       alert("RMA gerado!"); loadDataFromServer();
     }
 
-    // --- HELPDESK LÓGICA ---
     function openHelpdeskModal() {
       document.getElementById('hd-machine-code').value = '';
       document.getElementById('hd-requester').value = '';
@@ -817,8 +834,8 @@
 
     function renderTickets(statusFilter) {
       currentTicketFilter = statusFilter;
-      document.getElementById('filter-ticket-Aberto').className = statusFilter === 'Aberto' ? "px-4 py-1.5 rounded-full text-xs font-bold bg-blue-600 text-white shadow-sm" : "px-4 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600";
-      document.getElementById('filter-ticket-Resolvido').className = statusFilter === 'Resolvido' ? "px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm" : "px-4 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600";
+      document.getElementById('filter-ticket-Aberto').className = statusFilter === 'Aberto' ? "px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-md shadow-blue-500/20" : "px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300";
+      document.getElementById('filter-ticket-Resolvido').className = statusFilter === 'Resolvido' ? "px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-md shadow-emerald-500/20" : "px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300";
 
       const priorityFilter = document.getElementById('ticket-priority-filter').value;
       const c = document.getElementById('tickets-list'); c.innerHTML = '';
@@ -835,19 +852,19 @@
         const dateStr = new Date(ticket.created_at).toLocaleString('pt-BR');
         
         const act = statusFilter === 'Aberto' ? 
-          `<button onclick="resolveTicket('${ticket.id}')" class="w-full mt-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs py-2 rounded-lg transition">Resolver Chamado</button>` : 
-          `<div class="mt-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-[11px] text-slate-600"><strong>Resolução:</strong> ${ticket.resolution_notes||'N/A'}</div>`;
+          `<button onclick="resolveTicket('${ticket.id}')" class="w-full mt-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900 font-bold text-xs py-2.5 rounded-xl transition">Resolver Chamado</button>` : 
+          `<div class="mt-2.5 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300"><strong>Resolução:</strong> ${ticket.resolution_notes||'N/A'}</div>`;
         
         c.innerHTML += `
-          <div class="bg-white p-4 rounded-xl shadow-sm border ${statusFilter==='Aberto'?'border-l-4 border-amber-400':'border-slate-200'} space-y-2">
+          <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-sm border ${statusFilter==='Aberto'?'border-l-4 border-amber-400':'border-slate-200/80 dark:border-slate-800'} space-y-2.5">
             <div class="flex justify-between items-start">
               <div>
                 <span class="text-[10px] text-slate-400">${dateStr}</span>
-                <h4 class="font-bold text-slate-800 text-sm mt-0.5"><i class="fa-regular fa-user mr-1 text-slate-400"></i> ${ticket.requester_name}</h4>
+                <h4 class="font-bold text-slate-800 dark:text-white text-sm mt-0.5"><i class="fa-regular fa-user mr-1 text-slate-400"></i> ${ticket.requester_name}</h4>
               </div>
-              <button onclick="${m?`openMachineDetails('${m.id}')`:''}" class="bg-slate-100 text-blue-700 font-mono text-[10px] px-2 py-1 rounded font-bold">Ver Máq</button>
+              <button onclick="${m?`openMachineDetails('${m.id}')`:''}" class="bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-mono text-[10px] px-2.5 py-1 rounded-xl font-bold">Ver Máq</button>
             </div>
-            <p class="text-xs text-slate-700 bg-amber-50/40 p-2.5 rounded-lg border border-amber-100/60 italic">"${ticket.issue_description}"</p>
+            <p class="text-xs text-slate-700 dark:text-slate-300 bg-amber-50/40 dark:bg-amber-950/20 p-3 rounded-xl border border-amber-100/60 dark:border-amber-900/30 italic">"${ticket.issue_description}"</p>
             ${act}
           </div>`;
       });
@@ -863,7 +880,6 @@
       loadDataFromServer();
     }
 
-    // --- DASHBOARD ESTATÍSTICO ---
     function renderStatistics() {
       document.getElementById('stat-card-total').innerText = machines.length;
       document.getElementById('stat-card-sectors').innerText = sectors.length;
@@ -878,8 +894,8 @@
         const color = st === 'Operacional' ? 'bg-emerald-500' : st === 'Manutenção' ? 'bg-amber-500' : 'bg-red-500';
         sContainer.innerHTML += `
           <div>
-            <div class="flex justify-between font-semibold mb-1"><span>${st}</span><span>${count} (${pct}%)</span></div>
-            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden"><div class="${color} h-2 rounded-full" style="width: ${pct}%"></div></div>
+            <div class="flex justify-between font-semibold mb-1 text-slate-700 dark:text-slate-300"><span>${st}</span><span>${count} (${pct}%)</span></div>
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden"><div class="${color} h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div></div>
           </div>`;
       });
 
@@ -890,13 +906,12 @@
         const count = osCounts[os], pct = Math.round((count / total) * 100);
         oContainer.innerHTML += `
           <div>
-            <div class="flex justify-between font-semibold mb-1"><span>${os}</span><span>${count} (${pct}%)</span></div>
-            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden"><div class="bg-purple-600 h-2 rounded-full" style="width: ${pct}%"></div></div>
+            <div class="flex justify-between font-semibold mb-1 text-slate-700 dark:text-slate-300"><span>${os}</span><span>${count} (${pct}%)</span></div>
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden"><div class="bg-purple-600 h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div></div>
           </div>`;
       });
     }
 
-    // --- LEITOR GLOBAL DE CÂMARA NA PESQUISA ---
     function startGlobalScanner() {
       document.getElementById('global-scanner-container').classList.remove('hidden');
       if(globalHtml5Scanner) stopGlobalScanner();
@@ -913,7 +928,6 @@
       document.getElementById('global-scanner-container').classList.add('hidden');
     }
 
-    // --- DEMAIS FUNÇÕES DO SISTEMA (ANDARES, MÁQUINAS, HISTÓRICO) ---
     function loadCustomPeripheralsFromStorage(){try{const s=JSON.parse(localStorage.getItem('reg_custom_peripherals')||'[]');if(s.length)customPeripheralsList=s;}catch(e){}}
     function saveCustomPeripheralsToStorage(){localStorage.setItem('reg_custom_peripherals',JSON.stringify(customPeripheralsList));}
     function loadCustomModelsFromStorage(){try{const s=JSON.parse(localStorage.getItem('reg_custom_models')||'[]');if(s.length)customModelsList=s;}catch(e){}renderModelOptions();}
@@ -932,15 +946,15 @@
     function renderFloorsAndSectors() {
       const fc = document.getElementById('floors-tabs-container'), sc = document.getElementById('sectors-list'); fc.innerHTML = ''; sc.innerHTML = '';
       if(!currentFloorId && floors.length > 0) currentFloorId = floors[0].id;
-      floors.forEach(f => fc.innerHTML += `<button onclick="currentFloorId='${f.id}'; renderFloorsAndSectors()" class="px-4 py-2 font-bold whitespace-nowrap border-t border-x rounded-t-xl ${f.id === currentFloorId ? 'bg-white text-indigo-900 border-indigo-400' : 'bg-slate-200 text-slate-600'}">${f.name}</button>`);
-      fc.innerHTML += `<button onclick="addNewFloorPrompt()" class="px-3 py-2 bg-indigo-50 text-indigo-700 font-bold rounded-xl ml-1">+</button>`;
+      floors.forEach(f => fc.innerHTML += `<button onclick="currentFloorId='${f.id}'; renderFloorsAndSectors()" class="px-4 py-2.5 font-bold whitespace-nowrap rounded-2xl transition shadow-sm ${f.id === currentFloorId ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-slate-600 dark:text-slate-300'}">${f.name}</button>`);
+      fc.innerHTML += `<button onclick="addNewFloorPrompt()" class="px-3.5 py-2.5 bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold rounded-2xl border border-indigo-100 dark:border-indigo-900 shadow-sm ml-1">+</button>`;
       const actF = floors.find(f => f.id === currentFloorId);
       if (actF) { document.getElementById('current-floor-title').innerText = actF.name; document.getElementById('btn-edit-floor').classList.remove('hidden'); document.getElementById('btn-delete-floor').classList.remove('hidden'); }
       const secs = sectors.filter(s => s.floor_id === currentFloorId);
-      if(secs.length===0) sc.innerHTML = '<div class="p-6 text-center text-slate-500 bg-white rounded-xl">Sem setores.</div>';
+      if(secs.length===0) sc.innerHTML = '<div class="p-6 text-center text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">Sem setores.</div>';
       secs.forEach(sec => {
         const count = machines.filter(m => m.sector_id === sec.id).length;
-        sc.innerHTML += `<div class="bg-white p-4 rounded-xl border flex justify-between cursor-pointer" onclick="openSectorItems('${sec.id}')"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-50 text-blue-600"><i class="fa-solid fa-folder"></i></div><div><h3 class="font-bold text-sm">${sec.name}</h3><span class="text-xs text-slate-500">${count} máq.</span></div></div><div class="flex gap-2"><button onclick="event.stopPropagation(); editFolder('${sec.id}')" class="p-2 text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="event.stopPropagation(); deleteFolder('${sec.id}')" class="p-2 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></div></div>`;
+        sc.innerHTML += `<div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex justify-between items-center cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition" onclick="openSectorItems('${sec.id}')"><div class="flex items-center gap-3.5"><div class="w-11 h-11 rounded-2xl flex items-center justify-center bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shadow-inner"><i class="fa-solid fa-folder text-lg"></i></div><div><h3 class="font-bold text-sm text-slate-800 dark:text-white">${sec.name}</h3><span class="text-xs text-slate-400">${count} máq.</span></div></div><div class="flex gap-2"><button onclick="event.stopPropagation(); editFolder('${sec.id}')" class="p-2.5 text-slate-400 hover:text-blue-500"><i class="fa-solid fa-pen"></i></button><button onclick="event.stopPropagation(); deleteFolder('${sec.id}')" class="p-2.5 text-slate-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button></div></div>`;
       });
     }
 
@@ -995,9 +1009,9 @@
       else list.sort((a,b)=>String(a.ticket).localeCompare(String(b.ticket)));
       
       document.getElementById('current-sector-count').innerText=`${list.length} máquinas`;
-      if(!list.length){c.innerHTML='<div class="p-6 text-center text-slate-500 bg-white rounded-xl">Sem máquinas.</div>';return;}
+      if(!list.length){c.innerHTML='<div class="p-6 text-center text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">Sem máquinas.</div>';return;}
       list.forEach(m=>{
-        c.innerHTML+=`<div class="bg-white p-3 rounded-xl border flex flex-col cursor-pointer" onclick="openMachineDetails('${m.id}')"><div class="flex justify-between items-start"><div><span class="font-mono font-bold text-blue-700">Gab: ${m.code}</span><p class="text-xs font-medium text-slate-800">${m.model}</p><p class="text-[10px] text-purple-600">Ticket: ${m.ticket}</p></div><span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full">${m.status}</span></div><div class="flex justify-between border-t pt-2 mt-2 text-[11px]"><button onclick="event.stopPropagation(); openMoveMachineModal('${m.id}')" class="text-indigo-600 font-bold">Mover</button><button onclick="event.stopPropagation(); editMachine('${m.id}')" class="text-blue-600 font-bold">Editar</button><button onclick="event.stopPropagation(); deleteMachine('${m.id}')" class="text-red-500 font-bold">Excluir</button></div></div>`;
+        c.innerHTML+=`<div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition" onclick="openMachineDetails('${m.id}')"><div class="flex justify-between items-start"><div><span class="font-mono font-bold text-blue-600 dark:text-blue-400">Gab: ${m.code}</span><p class="text-xs font-semibold text-slate-800 dark:text-white mt-0.5">${m.model}</p><p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Ticket: ${m.ticket}</p></div><span class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-full font-semibold">${m.status}</span></div><div class="flex justify-between border-t border-slate-100 dark:border-slate-800 pt-2.5 mt-2.5 text-[11px]"><button onclick="event.stopPropagation(); openMoveMachineModal('${m.id}')" class="text-indigo-600 dark:text-indigo-400 font-bold hover:underline">Mover</button><button onclick="event.stopPropagation(); editMachine('${m.id}')" class="text-blue-600 dark:text-blue-400 font-bold hover:underline">Editar</button><button onclick="event.stopPropagation(); deleteMachine('${m.id}')" class="text-red-500 font-bold hover:underline">Excluir</button></div></div>`;
       });
     }
 
@@ -1029,20 +1043,19 @@
     function closeMachineDetails(){document.getElementById('modal-machine-details').classList.add('hidden');activeMachineForHistory=null;}
     function switchMachineTab(tab){
       document.getElementById('printable-ticket').classList.toggle('hidden',tab!=='info');document.getElementById('machine-tab-history').classList.toggle('hidden',tab!=='history');document.getElementById('machine-tab-history').classList.toggle('flex',tab==='history');
-      document.getElementById('tab-btn-info').className=tab==='info'?"flex-1 py-2.5 text-blue-600 border-b-2 border-blue-600 bg-blue-50/30":"flex-1 py-2.5 text-slate-500 border-b-2 border-transparent";
-      document.getElementById('tab-btn-history').className=tab==='history'?"flex-1 py-2.5 text-blue-600 border-b-2 border-blue-600 bg-blue-50/30":"flex-1 py-2.5 text-slate-500 border-b-2 border-transparent";
+      document.getElementById('tab-btn-info').className=tab==='info'?"flex-1 py-3 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 bg-blue-50/30 dark:bg-blue-950/20":"flex-1 py-3 text-slate-400 border-b-2 border-transparent";
+      document.getElementById('tab-btn-history').className=tab==='history'?"flex-1 py-3 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 bg-blue-50/30 dark:bg-blue-950/20":"flex-1 py-3 text-slate-400 border-b-2 border-transparent";
       if(tab==='history')fetchMachineHistory(activeMachineForHistory);
     }
     async function fetchMachineHistory(id){
       const c=document.getElementById('machine-history-list');c.innerHTML='<p class="text-center py-4 text-slate-400">A carregar...</p>';
       const {data}=await supabaseClient.from('machine_history').select('*').eq('machine_id',id).order('created_at',{ascending:false});
       if(!data||!data.length){c.innerHTML='<p class="text-center py-4 text-slate-400">Sem histórico.</p>';return;}
-      c.innerHTML='';data.forEach(l=>c.innerHTML+=`<div class="bg-white p-3 rounded-xl border mb-2"><div class="flex justify-between"><span class="font-bold text-slate-700">${l.action_type}</span><span class="text-[10px] text-slate-400">${new Date(l.created_at).toLocaleString('pt-BR')}</span></div><p class="text-xs mt-1 text-slate-600">${l.description}</p><div class="text-[10px] text-slate-400 mt-1">Por: ${l.user_name}</div></div>`);
+      c.innerHTML='';data.forEach(l=>c.innerHTML+=`<div class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 mb-2.5 shadow-sm"><div class="flex justify-between"><span class="font-bold text-slate-700 dark:text-slate-200">${l.action_type}</span><span class="text-[10px] text-slate-400">${new Date(l.created_at).toLocaleString('pt-BR')}</span></div><p class="text-xs mt-1 text-slate-600 dark:text-slate-300">${l.description}</p><div class="text-[10px] text-slate-400 mt-1">Por: ${l.user_name}</div></div>`);
     }
     async function logMachineHistory(id,action,desc){await supabaseClient.from('machine_history').insert([{machine_id:id,user_name:currentUser?currentUser.username:'Sistema',action_type:action,description:desc}]);}
     async function addManualHistoryLog(e){e.preventDefault();const i=document.getElementById('manual-log-desc');if(i.value&&activeMachineForHistory){await logMachineHistory(activeMachineForHistory,'Nota',i.value);i.value='';fetchMachineHistory(activeMachineForHistory);}}
 
-    // ====== MODAL DE SELECIONAR SETOR PARA MOVER MÁQUINA ======
     function openMoveMachineModal(id) {
       interactiveFolderCallback = async (sec) => {
         await supabaseClient.from('machines').update({ sector_id: sec.id }).eq('id', id);
@@ -1070,14 +1083,14 @@
         const floorName = floor ? floor.name : 'Sem Andar';
         const machineCount = machines.filter(m => m.sector_id === s.id).length;
         c.innerHTML += `
-        <div class="flex items-center gap-3 p-3 border border-slate-200 rounded-xl hover:border-blue-400 hover:bg-blue-50/40 transition cursor-pointer bg-white shadow-sm mb-2" 
+        <div class="flex items-center gap-3.5 p-3.5 border border-slate-200/80 dark:border-slate-800 rounded-2xl hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 transition cursor-pointer bg-white dark:bg-slate-900 shadow-sm mb-2.5" 
              onclick="document.getElementById('modal-select-folder').classList.add('hidden'); interactiveFolderCallback({id:'${s.id}', name:'${s.name}'})">
-          <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center flex-none shadow-inner"><i class="fa-solid fa-folder text-lg"></i></div>
+          <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-none shadow-inner"><i class="fa-solid fa-folder text-lg"></i></div>
           <div class="flex-1 min-w-[120px]">
-            <h4 class="font-bold text-slate-800 text-sm leading-tight">${s.name}</h4>
-            <p class="text-[11px] text-slate-500 mt-0.5">Andar: <span class="font-bold text-indigo-900">${floorName}</span></p>
+            <h4 class="font-bold text-slate-800 dark:text-white text-sm leading-tight">${s.name}</h4>
+            <p class="text-[11px] text-slate-400 mt-0.5">Andar: <span class="font-bold text-indigo-900 dark:text-indigo-300">${floorName}</span></p>
           </div>
-          <span class="bg-indigo-50 text-indigo-700 font-bold text-[11px] px-2.5 py-1 rounded-full border border-indigo-100 flex-none">${machineCount} máq.</span>
+          <span class="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] px-2.5 py-1 rounded-xl border border-indigo-100 dark:border-indigo-900 flex-none">${machineCount} máq.</span>
         </div>`;
       });
     }
@@ -1086,7 +1099,7 @@
       document.getElementById('modal-sync-options').classList.remove('hidden');
     }
 
-   async function executeSync(mode) {
+    async function executeSync(mode) {
       document.getElementById('modal-sync-options').classList.add('hidden');
       
       const progressBox = document.getElementById('sync-progress-box');
@@ -1095,7 +1108,7 @@
       const statusText = document.getElementById('sync-status-text');
       
       progressBox.classList.remove('hidden');
-      progressBar.style.width = '10%';
+      progressBar.style.width = '10%A';
       percentageText.innerText = '10%';
       statusText.innerText = 'A preparar dados...';
 
@@ -1154,44 +1167,7 @@
       }
     }
 
-      let progress = 20;
-      const interval = setInterval(() => {
-        if(progress < 85) {
-          progress += 15;
-          progressBar.style.width = progress + '%';
-          percentageText.innerText = progress + '%';
-          if(progress > 50) statusText.innerText = 'A enviar p/ Sheets...';
-        }
-      }, 150);
-
-      try {
-        const response = await fetch(GOOGLE_SHEETS_WEBHOOK_URLS[0], {
-          method: 'POST',
-          body: JSON.stringify({ mode: mode, data: payload })
-        });
-        
-        clearInterval(interval);
-        progressBar.style.width = '100%';
-        percentageText.innerText = '100%';
-        statusText.innerText = 'Concluído!';
-
-        setTimeout(() => {
-          progressBox.classList.add('hidden');
-        }, 2000);
-
-        const result = await response.json();
-        if(result.status === 'success') {
-          alert("✅ Sincronização concluída com sucesso!");
-        }
-      } catch (e) {
-        clearInterval(interval);
-        progressBox.classList.add('hidden');
-        console.error("Erro no Sync:", e);
-        alert("❌ Erro ao comunicar com o Google Sheets.");
-      }
-    }
-
-    function openExportModal(){const c=document.getElementById('export-sectors-checkboxes');c.innerHTML='';sectors.forEach(s=>c.innerHTML+=`<label class="flex items-center gap-2 p-1"><input type="checkbox" name="export-sector-chk" value="${s.id}" checked class="w-4 h-4 text-blue-600"><span class="font-medium">${s.name}</span></label>`);document.getElementById('modal-export').classList.remove('hidden');}
+    function openExportModal(){const c=document.getElementById('export-sectors-checkboxes');c.innerHTML='';sectors.forEach(s=>c.innerHTML+=`<label class="flex items-center gap-2 p-1.5"><input type="checkbox" name="export-sector-chk" value="${s.id}" checked class="w-4 h-4 text-blue-600 rounded"><span class="font-medium">${s.name}</span></label>`);document.getElementById('modal-export').classList.remove('hidden');}
     function generateAndDownloadCSV(){
       const ids=Array.from(document.querySelectorAll('input[name="export-sector-chk"]:checked')).map(x => x.value),f=machines.filter(m=>ids.includes(m.sector_id));
       let csv="\uFEFFAndar\tSetor\tTicket\tGabinete\tMonitor\tModelo\tSO\tEstado\tPeriféricos\tObs\n";
@@ -1202,26 +1178,24 @@
     function exportDatabaseJson(){const j=JSON.stringify({floors,sectors,machines,customPeripherals:customPeripheralsList,customModels:customModelsList},null,2);const b=new Blob([j],{type:'application/json'}),l=document.createElement("a");l.href=URL.createObjectURL(b);l.download=`Backup_${Date.now()}.json`;l.click();}
     async function importDatabaseJson(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=async(evt)=>{try{const d=JSON.parse(evt.target.result);if(!confirm("Sobrescrever servidor?"))return;for(const fl of d.floors||[])await supabaseClient.from('floors').insert([fl]);for(const s of d.sectors||[])await supabaseClient.from('sectors').insert([s]);for(const m of d.machines||[])await supabaseClient.from('machines').insert([m]);alert("Restaurado!");loadDataFromServer();}catch(err){alert("JSON inválido.");}};r.readAsText(f);}
     
-    function renderUsers(){const c=document.getElementById('users-list');c.innerHTML='';usersList.forEach(u=>c.innerHTML+=`<div class="bg-slate-50 p-2 border rounded flex justify-between"><span>${u.username} (${u.role})</span><button onclick="deleteUser('${u.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div>`);}
+    function renderUsers(){const c=document.getElementById('users-list');c.innerHTML='';usersList.forEach(u=>c.innerHTML+=`<div class="bg-slate-50 dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700 rounded-2xl flex justify-between items-center mb-2"><span>${u.username} (${u.role})</span><button onclick="deleteUser('${u.id}')" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div>`);}
     function openUserModal(){document.getElementById('modal-user').classList.remove('hidden');}
     async function saveUser(e){e.preventDefault();const u={id:'usr_'+Date.now(),username:document.getElementById('modal-username').value,password:document.getElementById('modal-password').value,role:document.getElementById('modal-role').value};await supabaseClient.from('users').insert([u]);document.getElementById('modal-user').classList.add('hidden');loadDataFromServer();}
     async function deleteUser(id){if(confirm("Remover utilizador?")){await supabaseClient.from('users').delete().eq('id',id);loadDataFromServer();}}
     
-    // Pesquisa Global Inteligente
     function handleGlobalSearch(q){
       const query = q.toLowerCase();
       if(!query) { renderFloorsAndSectors(); return; }
       const matched = machines.filter(m => String(m.code).includes(query) || String(m.monitor).includes(query) || String(m.model).toLowerCase().includes(query));
       const sc = document.getElementById('sectors-list'); sc.innerHTML = '';
-      if(matched.length === 0) { sc.innerHTML = '<div class="p-6 text-center text-slate-500 bg-white rounded-xl">Nenhuma máquina encontrada.</div>'; return; }
+      if(matched.length === 0) { sc.innerHTML = '<div class="p-6 text-center text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800">Nenhuma máquina encontrada.</div>'; return; }
       matched.forEach(m => {
         const sec = sectors.find(x => x.id === m.sector_id);
         const secName = sec ? sec.name : 'Desconhecido';
-        sc.innerHTML += `<div class="bg-white p-3 rounded-xl border flex flex-col cursor-pointer mb-2" onclick="openMachineDetails('${m.id}')"><div class="flex justify-between items-start"><div><span class="font-mono font-bold text-blue-700">Gab: ${m.code}</span><p class="text-xs font-medium text-slate-800">${m.model} (${secName})</p><p class="text-[10px] text-purple-600">Ticket: ${m.ticket}</p></div><span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full">${m.status}</span></div></div>`;
+        sc.innerHTML += `<div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col cursor-pointer mb-2.5 hover:border-blue-400 dark:hover:border-blue-600 transition" onclick="openMachineDetails('${m.id}')"><div class="flex justify-between items-start"><div><span class="font-mono font-bold text-blue-600 dark:text-blue-400">Gab: ${m.code}</span><p class="text-xs font-semibold text-slate-800 dark:text-white mt-0.5">${m.model} (${secName})</p><p class="text-[10px] text-purple-600 dark:text-purple-400 font-medium">Ticket: ${m.ticket}</p></div><span class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-2.5 py-1 rounded-full font-semibold">${m.status}</span></div></div>`;
       });
     }
 
-    // ====== FUNÇÕES DA JANELA "TODAS AS PASTAS" ======
     function openAllFoldersModal() { 
       document.getElementById('modal-all-folders').classList.remove('hidden'); 
       document.getElementById('modal-folder-search').value = '';
@@ -1247,20 +1221,20 @@
         const floorName = floor ? floor.name : 'Desconhecido';
         const machineCount = machines.filter(m => m.sector_id === s.id).length;
         c.innerHTML += `
-        <div class="flex flex-wrap sm:flex-nowrap items-center gap-3 p-3 border border-slate-200 rounded-xl hover:border-blue-300 transition bg-white shadow-sm">
+        <div class="flex flex-wrap sm:flex-nowrap items-center gap-3.5 p-3.5 border border-slate-200/80 dark:border-slate-800 rounded-2xl hover:border-blue-300 transition bg-white dark:bg-slate-900 shadow-sm">
           <input type="checkbox" class="folder-chk w-4 h-4 text-blue-600 rounded border-slate-300 cursor-pointer ml-1" value="${s.id}" onchange="updateFolderSelectionCount()">
-          <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center flex-none cursor-pointer hover:bg-blue-200 transition" onclick="goToSector('${s.floor_id}', '${s.id}')">
+          <div class="w-10 h-10 rounded-2xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-none cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900 transition" onclick="goToSector('${s.floor_id}', '${s.id}')">
             <i class="fa-solid fa-folder text-lg"></i>
           </div>
           <div class="flex-1 min-w-[120px] cursor-pointer" onclick="goToSector('${s.floor_id}', '${s.id}')">
-            <h4 class="font-bold text-slate-800 text-sm leading-tight">${s.name}</h4>
-            <p class="text-[11px] text-slate-500 mt-0.5">Andar: <span class="font-bold text-indigo-900">${floorName}</span></p>
+            <h4 class="font-bold text-slate-800 dark:text-white text-sm leading-tight">${s.name}</h4>
+            <p class="text-[11px] text-slate-400 mt-0.5">Andar: <span class="font-bold text-indigo-900 dark:text-indigo-300">${floorName}</span></p>
           </div>
           <div class="flex items-center gap-3 flex-none ml-auto sm:ml-0 mt-2 sm:mt-0">
-            <span class="bg-indigo-50 text-indigo-700 font-bold text-[11px] px-3 py-1 rounded-full border border-indigo-100">${machineCount} máquina(s)</span>
+            <span class="bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-[11px] px-3 py-1 rounded-xl border border-indigo-100 dark:border-indigo-900">${machineCount} máquina(s)</span>
             <div class="flex gap-1.5">
-              <button onclick="editFolder('${s.id}')" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition"><i class="fa-solid fa-pen text-[10px]"></i></button>
-              <button onclick="deleteFolder('${s.id}')" class="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-600 hover:text-white transition"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+              <button onclick="editFolder('${s.id}')" class="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center hover:bg-blue-600 hover:text-white transition"><i class="fa-solid fa-pen text-[10px]"></i></button>
+              <button onclick="deleteFolder('${s.id}')" class="w-8 h-8 rounded-full bg-red-50 dark:bg-red-950 text-red-500 dark:text-red-400 flex items-center justify-center hover:bg-red-600 hover:text-white transition"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
             </div>
           </div>
         </div>`;
