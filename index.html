@@ -86,29 +86,28 @@
       <button id="btn-back" onclick="goBack()" class="hidden text-slate-600 dark:text-slate-300 hover:text-blue-600 text-lg"><i class="fa-solid fa-arrow-left"></i></button>
       <h1 id="app-title" class="font-bold text-base leading-tight truncate">InfraGest</h1>
     </div>
+    
     <div class="flex items-center gap-2">
+      <!-- Barra de Progresso Fixa no Cabeçalho (Invisível por defeito) -->
+      <div id="sync-progress-box" class="hidden items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[10px]">
+        <div class="flex flex-col">
+          <span id="sync-status-text" class="font-bold text-slate-700 dark:text-slate-200 leading-none">A sincronizar...</span>
+          <span id="sync-percentage" class="text-[9px] text-purple-600 dark:text-purple-400 font-extrabold mt-0.5">0%</span>
+        </div>
+        <div class="w-16 bg-slate-200 dark:bg-slate-700 rounded-full h-1.5 overflow-hidden">
+          <div id="sync-progress-bar" class="bg-purple-600 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+        </div>
+      </div>
+
       <!-- Botão Dark Mode Toggle -->
       <button onclick="toggleDarkMode()" title="Alternar Tema" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs p-2.5 rounded-xl transition">
         <i id="dark-mode-icon" class="fa-solid fa-moon"></i>
       </button>
 
-      <!-- Botão Sync e Barra de Progresso Integrada -->
-      <div class="relative flex flex-col items-end">
-        <button onclick="openSyncOptionsModal()" title="Sync Sheets" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-1.5 shadow-lg shadow-purple-500/20 transition" id="btn-sync-sheets">
-          <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">Sync</span>
-        </button>
-        
-        <!-- Barra de Progresso Flutuante com Porcentagem -->
-        <div id="sync-progress-box" class="hidden absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-900 p-3 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-30 text-[10px] space-y-2">
-          <div class="flex justify-between font-bold text-slate-700 dark:text-slate-200">
-            <span id="sync-status-text">A sincronizar...</span>
-            <span id="sync-percentage">0%</span>
-          </div>
-          <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-            <div id="sync-progress-bar" class="bg-purple-600 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
-          </div>
-        </div>
-      </div>
+      <!-- Botão Sync -->
+      <button onclick="openSyncOptionsModal()" title="Sync Sheets" class="bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-1.5 shadow-lg shadow-purple-500/20 transition" id="btn-sync-sheets">
+        <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">Sync</span>
+      </button>
 
       <button onclick="openExportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition"><i class="fa-solid fa-file-excel"></i> <span class="hidden sm:inline">Exportar</span></button>
     </div>
@@ -380,6 +379,11 @@
           </div>
           <span class="bg-slate-700 text-[10px] font-bold px-2 py-1 rounded-xl">Completo</span>
         </button>
+
+        <!-- Botão para baixar relatório da última sincronização -->
+        <button onclick="downloadLastSyncReportExcel()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3.5 rounded-2xl shadow-md transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-file-excel"></i> Baixar Relatório da Última Sincronização
+        </button>
       </div>
 
       <button onclick="document.getElementById('modal-sync-options').classList.add('hidden')" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs py-3 rounded-2xl transition mt-2">
@@ -488,7 +492,7 @@
         <button onclick="closeMachineDetails()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="flex border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold flex-none">
-        <button type="button" onclick="switchMachineTab('info')" id="tab-btn-info" class="flex-1 py-3 text-blue-600 border-b-2 border-blue-600 bg-blue-50/30 dark:bg-blue-950/20">Dados</button>
+        <button type="button" onclick="switchMachineTab('info')" id="tab-btn-info" class="flex-1 py-3 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 bg-blue-50/30 dark:bg-blue-950/20">Dados</button>
         <button type="button" onclick="switchMachineTab('history')" id="tab-btn-history" class="flex-1 py-3 text-slate-400 border-b-2 border-transparent">Prontuário</button>
       </div>
       <div id="printable-ticket" class="p-5 space-y-4 overflow-y-auto flex-1 text-xs bg-white dark:bg-slate-900">
@@ -599,6 +603,7 @@
     let currentFloorId = null, currentSectorId = null, currentFilterStatus = 'Todos', currentMachineSort = 'ticket';
     let currentTicketFilter = 'Aberto', currentRmaFilter = 'Aguardando Envio';
     let html5QrcodeScanner = null, globalHtml5Scanner = null, activeScannerTarget = 'code', currentUser = null, interactiveFolderCallback = null, activeMachineForHistory = null;
+    let lastSyncPayload = []; // Guarda os dados da última sincronização para exportação em Excel
 
     window.onload = async () => {
       loadCustomPeripheralsFromStorage(); loadCustomModelsFromStorage();
@@ -1108,9 +1113,10 @@
       const statusText = document.getElementById('sync-status-text');
       
       progressBox.classList.remove('hidden');
-      progressBar.style.width = '10%A';
+      progressBox.style.display = 'flex';
+      progressBar.style.width = '10%';
       percentageText.innerText = '10%';
-      statusText.innerText = 'A preparar dados...';
+      statusText.innerText = 'A preparar...';
 
       const payload = machines.map(m => {
         const s = sectors.find(x => x.id === m.sector_id);
@@ -1130,13 +1136,15 @@
         };
       });
 
+      lastSyncPayload = payload; // Guarda o payload para exportação posterior
+
       let progress = 20;
       const interval = setInterval(() => {
         if(progress < 85) {
           progress += 15;
           progressBar.style.width = progress + '%';
           percentageText.innerText = progress + '%';
-          if(progress > 50) statusText.innerText = 'A enviar p/ Sheets...';
+          if(progress > 50) statusText.innerText = 'A enviar...';
         }
       }, 150);
 
@@ -1153,6 +1161,7 @@
 
         setTimeout(() => {
           progressBox.classList.add('hidden');
+          progressBox.style.display = 'none';
         }, 2000);
 
         const result = await response.json();
@@ -1162,9 +1171,30 @@
       } catch (e) {
         clearInterval(interval);
         progressBox.classList.add('hidden');
+        progressBox.style.display = 'none';
         console.error("Erro no Sync:", e);
         alert("❌ Erro ao comunicar com o Google Sheets.");
       }
+    }
+
+    function downloadLastSyncReportExcel() {
+      if (!lastSyncPayload || lastSyncPayload.length === 0) {
+        alert("Ainda não foi realizada nenhuma sincronização nesta sessão.");
+        return;
+      }
+
+      let csv = "\uFEFFAndar\tSetor\tTicket\tGabinete\tMonitor\tModelo\tSO\tEstado\tPeriféricos\tObs\tData\n";
+      lastSyncPayload.forEach(item => {
+        csv += `${item.floor}\t${item.sector}\t${item.ticket}\t${item.code}\t${item.monitor}\t${item.model}\t${item.os}\t${item.status}\t${item.peripherals}\t${item.notes}\t${item.date}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'tab-separated-values;charset=utf-8;' });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Relatorio_Sync_${Date.now()}.xls`;
+      link.click();
+      
+      document.getElementById('modal-sync-options').classList.add('hidden');
     }
 
     function openExportModal(){const c=document.getElementById('export-sectors-checkboxes');c.innerHTML='';sectors.forEach(s=>c.innerHTML+=`<label class="flex items-center gap-2 p-1.5"><input type="checkbox" name="export-sector-chk" value="${s.id}" checked class="w-4 h-4 text-blue-600 rounded"><span class="font-medium">${s.name}</span></label>`);document.getElementById('modal-export').classList.remove('hidden');}
