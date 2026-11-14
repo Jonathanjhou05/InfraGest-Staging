@@ -105,6 +105,12 @@
         </div>
       </div>
 
+      <!-- Informação do Utilizador Logado (Cabeçalho) -->
+      <div id="header-user-info" class="hidden sm:flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+        <i class="fa-solid fa-user-shield text-blue-600 dark:text-blue-400"></i>
+        <span class="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px]" id="header-username-display">-</span>
+      </div>
+
       <!-- Botão Dark Mode Toggle -->
       <button onclick="toggleDarkMode()" title="Alternar Tema" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs p-2.5 rounded-xl transition">
         <i id="dark-mode-icon" class="fa-solid fa-moon"></i>
@@ -115,7 +121,13 @@
         <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">Sync</span>
       </button>
 
+      <!-- Botão Exportar -->
       <button onclick="openExportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition"><i class="fa-solid fa-file-excel"></i> <span class="hidden sm:inline">Exportar</span></button>
+
+      <!-- Botão Terminar Sessão Direto no Topo -->
+      <button onclick="handleLogout()" title="Terminar Sessão" class="bg-red-50 dark:bg-red-950/50 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900 text-xs font-semibold px-3 py-2.5 rounded-xl flex items-center gap-1.5 transition">
+        <i class="fa-solid fa-power-off"></i> <span class="hidden md:inline">Sair</span>
+      </button>
     </div>
   </header>
 
@@ -525,7 +537,7 @@
     </div>
   </div>
 
-  <!-- MODAL: HISTÓRICO / AUDITORIA DE PASTA (NOVO) -->
+  <!-- MODAL: HISTÓRICO / AUDITORIA DE PASTA -->
   <div id="modal-sector-history" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg shadow-2xl flex flex-col max-h-[85vh] border border-slate-100 dark:border-slate-800">
       <div class="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-950/30 flex-none">
@@ -722,11 +734,12 @@
         currentUser = found; 
         document.getElementById('view-login').classList.add('hidden'); 
         document.getElementById('current-user-display').innerText = u; 
+        document.getElementById('header-username-display').innerText = u;
         document.getElementById('current-role-display').innerText = currentUser.role === 'admin' ? 'Administrador' : 'Técnico';
         renderFloorsAndSectors(); 
       } else document.getElementById('login-error').classList.remove('hidden');
     }
-    function handleLogout() { if(confirm("Sair?")) location.reload(); }
+    function handleLogout() { if(confirm("Deseja terminar a sessão?")) location.reload(); }
 
     async function loadDataFromServer() {
       if (!supabaseClient) return;
@@ -807,7 +820,7 @@
       reader.readAsArrayBuffer(file); event.target.value = '';
     }
 
-    // AUDITORIA / HISTÓRICO DE PASTAS (NOVO)
+    // AUDITORIA / HISTÓRICO DE PASTAS
     async function logSectorHistory(sectorId, sectorName, actionType, description) {
       if(!supabaseClient) return;
       try {
@@ -1579,6 +1592,18 @@
           const s = sectors.find(x => x.id === id);
           await logSectorHistory(id, s ? s.name : '', 'Exclusão', `Pasta excluída em lote.`);
           await supabaseClient.from('sectors').delete().eq('id', id);
+        }
+        loadDataFromServer(); document.getElementById('modal-all-folders').classList.add('hidden');
+      }
+    }
+    async function clearEmptyFolders() {
+      if(currentUser && currentUser.role !== 'admin') { alert("Acesso restrito a administradores."); return; }
+      const emptySectors = sectors.filter(s => machines.filter(m => m.sector_id === s.id).length === 0);
+      if (emptySectors.length === 0) return alert("Não existem pastas vazias.");
+      if (confirm(`Existem ${emptySectors.length} pastas vazias. Deseja excluí-las?`)) {
+        for (const s of emptySector) { // Corrigido para s of emptySectors
+          await logSectorHistory(s.id, s.name, 'Limpeza', `Pasta vazia excluída automaticamente.`);
+          await supabaseClient.from('sectors').delete().eq('id', s.id);
         }
         loadDataFromServer(); document.getElementById('modal-all-folders').classList.add('hidden');
       }
